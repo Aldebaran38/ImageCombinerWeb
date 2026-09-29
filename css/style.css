@@ -424,6 +424,12 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: opacity var(--transition-fast);
+}
+
+.range-with-number.disabled {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .form-range {
@@ -581,6 +587,28 @@ html, body {
   height: 16px;
   accent-color: var(--primary);
   cursor: pointer;
+}
+
+.sub-checkbox-row {
+  display: flex;
+  align-items: center;
+  margin-top: -2px;
+  margin-bottom: 2px;
+  transition: opacity var(--transition-fast);
+}
+
+.sub-checkbox-row.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.sub-checkbox {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.sub-checkbox:hover {
+  color: var(--text-muted);
 }
 
 /* Color Swatches */

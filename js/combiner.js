@@ -88,6 +88,7 @@
   function renderCollage(canvas, imageItems, distribution, canvasWidth, canvasHeight, options) {
     options = options || {};
     const gapSize = options.gapSize !== undefined ? options.gapSize : 0;
+    const outerBorderSize = options.outerBorderSize !== undefined ? options.outerBorderSize : 0;
     const bgColor = options.bgColor || '#18181b';
     const isTransparent = Boolean(options.isTransparent);
 
@@ -111,7 +112,7 @@
       return;
     }
 
-    const rects = calculateCellRectangles(distribution, canvasWidth, canvasHeight, gapSize);
+    const rects = calculateCellRectangles(distribution, canvasWidth, canvasHeight, gapSize, outerBorderSize);
 
     const count = Math.min(imageItems.length, rects.length);
     for (let i = 0; i < count; i++) {

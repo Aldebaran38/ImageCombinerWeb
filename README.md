@@ -10,7 +10,7 @@ A fast, private, and simple web application to combine multiple photos into a si
 - **Smart Balanced Layout:** Automatically calculates the cleanest grid distribution so photos are close to square and balanced.
 - **Center-Crop Fit:** Automatically fits and crops photos from the center to fill cells with zero distortion or black bars.
 - **Aspect Ratio & Megapixel Engine:** Select common shapes (`1:1`, `16:9`, `4:3`, `9:16`, `Custom`) and adjust resolution up to 16+ Megapixels.
-- **Custom Spacing & Backgrounds:** Adjust gaps between images and pick any background color or choose transparent.
+- **Custom Borders, Spacing & Backgrounds:** Control outer border frames and inner gaps between photos independently, pick custom border/background colors or choose transparent.
 - **Easy Reordering:** Drag-and-drop thumbnail cards or use arrow buttons to arrange your photos.
 - **Export Formats:** Download as PNG (lossless), JPEG, or WEBP with quality controls.
 

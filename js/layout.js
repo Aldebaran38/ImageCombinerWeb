@@ -73,9 +73,12 @@
   /**
    * Evaluates penalty for a specific row distribution.
    */
-  function scoreDistribution(distribution, canvasWidth, canvasHeight, gapSize) {
+  function scoreDistribution(distribution, canvasWidth, canvasHeight, gapSize, outerBorderSize = 0) {
     const numRows = distribution.length;
-    const availHeight = canvasHeight - (numRows - 1) * gapSize;
+    const safeGap = Math.max(0, Math.floor(gapSize));
+    const safeOuter = Math.max(0, Math.floor(outerBorderSize));
+
+    const availHeight = canvasHeight - (numRows - 1) * safeGap - (safeOuter * 2);
     if (availHeight <= 0) return Infinity;
 
     const nominalRowHeight = availHeight / numRows;
@@ -84,7 +87,7 @@
 
     for (let r = 0; r < numRows; r++) {
       const cols = distribution[r];
-      const availWidth = canvasWidth - (cols - 1) * gapSize;
+      const availWidth = canvasWidth - (cols - 1) * safeGap - (safeOuter * 2);
       if (availWidth <= 0) return Infinity;
 
       const nominalCellWidth = availWidth / cols;
@@ -107,7 +110,7 @@
   /**
    * Finds the optimal row distribution for N images to fit inside canvasWidth x canvasHeight.
    */
-  function findOptimalDistribution(numImages, canvasWidth, canvasHeight, gapSize = 0) {
+  function findOptimalDistribution(numImages, canvasWidth, canvasHeight, gapSize = 0, outerBorderSize = 0) {
     if (numImages <= 0) return [];
     if (numImages === 1) return [1];
 
@@ -118,7 +121,7 @@
       const candidatePartitions = getBalancedRowPartitions(numImages, r);
 
       for (const partition of candidatePartitions) {
-        const score = scoreDistribution(partition, canvasWidth, canvasHeight, gapSize);
+        const score = scoreDistribution(partition, canvasWidth, canvasHeight, gapSize, outerBorderSize);
         if (score < lowestScore) {
           lowestScore = score;
           bestDistribution = partition;
@@ -132,27 +135,33 @@
   /**
    * Computes exact integer pixel rectangles for each cell.
    */
-  function calculateCellRectangles(distribution, canvasWidth, canvasHeight, gapSize = 0) {
+  function calculateCellRectangles(distribution, canvasWidth, canvasHeight, gapSize = 0, outerBorderSize = 0) {
     const rects = [];
     const numRows = distribution.length;
     if (numRows === 0) return rects;
 
     const safeGap = Math.max(0, Math.floor(gapSize));
-    const availHeight = Math.max(numRows, canvasHeight - (numRows - 1) * safeGap);
+    const safeOuter = Math.max(0, Math.floor(outerBorderSize));
+
+    // Total vertical gap: inner gaps between rows plus outer border top & bottom
+    const totalGapHeight = (numRows - 1) * safeGap + (safeOuter * 2);
+    const availHeight = Math.max(numRows, canvasHeight - totalGapHeight);
     const baseRowHeight = Math.floor(availHeight / numRows);
     const remainderHeight = availHeight % numRows;
 
-    let currentY = 0;
+    let currentY = safeOuter;
 
     for (let r = 0; r < numRows; r++) {
       const rowHeight = baseRowHeight + (r < remainderHeight ? 1 : 0);
       const cols = distribution[r];
 
-      const availWidth = Math.max(cols, canvasWidth - (cols - 1) * safeGap);
+      // Total horizontal gap: inner gaps between columns plus outer border left & right
+      const totalGapWidth = (cols - 1) * safeGap + (safeOuter * 2);
+      const availWidth = Math.max(cols, canvasWidth - totalGapWidth);
       const baseColWidth = Math.floor(availWidth / cols);
       const remainderWidth = availWidth % cols;
 
-      let currentX = 0;
+      let currentX = safeOuter;
 
       for (let c = 0; c < cols; c++) {
         const cellWidth = baseColWidth + (c < remainderWidth ? 1 : 0);

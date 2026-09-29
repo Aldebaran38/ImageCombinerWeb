@@ -39,8 +39,11 @@
     megapixels: 2.0,        // Megapixels target
     customWidth: 1920,
     customHeight: 1080,
-    gapSize: 8,             // Gap in pixels
-    bgColor: '#18181b',     // Background color
+    hasOuterBorder: true,   // Outer border enabled / disabled
+    outerBorderSize: 8,     // Outer border in pixels
+    matchGapSize: true,     // When true, outer border matches photo gap
+    gapSize: 8,             // Gap between photos in pixels
+    bgColor: '#18181b',     // Border & background color
     isTransparent: false,   // Transparent gap/background toggle
     layoutMode: 'auto',     // 'auto', '1', '2', '3', '4', 'single-row'
     exportFormat: 'image/png', // 'image/png', 'image/jpeg', 'image/webp'
@@ -78,7 +81,14 @@
     customHeightInput: document.getElementById('custom-height-input'),
     resolutionText: document.getElementById('resolution-text'),
 
-    // Spacing & Color
+    // Spacing & Borders
+    outerBorderCheckbox: document.getElementById('outer-border-checkbox'),
+    outerBorderDisplay: document.getElementById('outer-border-display'),
+    outerBorderRow: document.getElementById('outer-border-row'),
+    outerBorderRange: document.getElementById('outer-border-range'),
+    outerBorderNumber: document.getElementById('outer-border-number'),
+    matchGapCheckbox: document.getElementById('match-gap-checkbox'),
+    matchGapContainer: document.getElementById('match-gap-container'),
     gapRange: document.getElementById('gap-range'),
     gapNumber: document.getElementById('gap-number'),
     gapDisplay: document.getElementById('gap-display'),
@@ -120,6 +130,14 @@
   }
 
   /**
+   * Returns current effective outer border thickness in pixels.
+   */
+  function getEffectiveOuterBorder() {
+    if (!state.hasOuterBorder) return 0;
+    return state.matchGapSize ? state.gapSize : state.outerBorderSize;
+  }
+
+  /**
    * Determines the row distribution array for current images and settings.
    */
   function getDistribution(width, height) {
@@ -150,7 +168,8 @@
     }
 
     // Default: Auto best fit layout
-    return findOptimalDistribution(count, width, height, state.gapSize);
+    const effectiveOuter = getEffectiveOuterBorder();
+    return findOptimalDistribution(count, width, height, state.gapSize, effectiveOuter);
   }
 
   /**
@@ -159,9 +178,17 @@
   function updateCanvas() {
     const { width, height } = getCanvasDimensions();
     const mpActual = ((width * height) / 1000000).toFixed(2);
+    const effectiveOuter = getEffectiveOuterBorder();
 
     // Update resolution summary text
     DOM.resolutionText.textContent = `${width} × ${height} px (${mpActual} MP)`;
+
+    // Update outer border indicator
+    if (!state.hasOuterBorder) {
+      DOM.outerBorderDisplay.textContent = 'None (0 px)';
+    } else {
+      DOM.outerBorderDisplay.textContent = `${effectiveOuter} px`;
+    }
 
     // If no photos uploaded, display empty state
     if (state.images.length === 0) {
@@ -196,6 +223,7 @@
 
     renderCollage(DOM.previewCanvas, state.images, distribution, width, height, {
       gapSize: state.gapSize,
+      outerBorderSize: effectiveOuter,
       bgColor: state.bgColor,
       isTransparent: state.isTransparent
     });
@@ -502,6 +530,73 @@
       updateCanvas();
     });
 
+    // Outer Border Controls
+    const updateOuterBorderUI = () => {
+      const isEnabled = state.hasOuterBorder;
+      const isMatched = state.matchGapSize;
+
+      DOM.outerBorderCheckbox.checked = isEnabled;
+      DOM.matchGapCheckbox.checked = isMatched;
+
+      if (!isEnabled) {
+        DOM.outerBorderRow.classList.add('disabled');
+        DOM.outerBorderRange.disabled = true;
+        DOM.outerBorderNumber.disabled = true;
+        DOM.matchGapContainer.classList.add('disabled');
+        DOM.matchGapCheckbox.disabled = true;
+        DOM.outerBorderDisplay.textContent = 'None (0 px)';
+      } else {
+        DOM.matchGapContainer.classList.remove('disabled');
+        DOM.matchGapCheckbox.disabled = false;
+
+        if (isMatched) {
+          DOM.outerBorderRow.classList.add('disabled');
+          DOM.outerBorderRange.disabled = true;
+          DOM.outerBorderNumber.disabled = true;
+          DOM.outerBorderRange.value = state.gapSize;
+          DOM.outerBorderNumber.value = state.gapSize;
+          DOM.outerBorderDisplay.textContent = `${state.gapSize} px`;
+        } else {
+          DOM.outerBorderRow.classList.remove('disabled');
+          DOM.outerBorderRange.disabled = false;
+          DOM.outerBorderNumber.disabled = false;
+          DOM.outerBorderRange.value = state.outerBorderSize;
+          DOM.outerBorderNumber.value = state.outerBorderSize;
+          DOM.outerBorderDisplay.textContent = `${state.outerBorderSize} px`;
+        }
+      }
+    };
+
+    DOM.outerBorderCheckbox.addEventListener('change', (e) => {
+      state.hasOuterBorder = e.target.checked;
+      updateOuterBorderUI();
+      updateCanvas();
+    });
+
+    DOM.matchGapCheckbox.addEventListener('change', (e) => {
+      state.matchGapSize = e.target.checked;
+      if (state.matchGapSize) {
+        state.outerBorderSize = state.gapSize;
+      }
+      updateOuterBorderUI();
+      updateCanvas();
+    });
+
+    const syncOuterBorder = (val) => {
+      const border = Math.max(0, Math.min(150, parseInt(val, 10) || 0));
+      state.outerBorderSize = border;
+      DOM.outerBorderRange.value = border;
+      DOM.outerBorderNumber.value = border;
+      DOM.outerBorderDisplay.textContent = `${border} px`;
+      updateCanvas();
+    };
+
+    DOM.outerBorderRange.addEventListener('input', (e) => syncOuterBorder(e.target.value));
+    DOM.outerBorderNumber.addEventListener('change', (e) => syncOuterBorder(e.target.value));
+
+    // Initialize outer border UI state
+    updateOuterBorderUI();
+
     // Gap Size Controls
     const syncGap = (val) => {
       const gap = Math.max(0, Math.min(150, parseInt(val, 10) || 0));
@@ -509,6 +604,13 @@
       DOM.gapRange.value = gap;
       DOM.gapNumber.value = gap;
       DOM.gapDisplay.textContent = `${gap} px`;
+
+      if (state.hasOuterBorder && state.matchGapSize) {
+        DOM.outerBorderRange.value = gap;
+        DOM.outerBorderNumber.value = gap;
+        DOM.outerBorderDisplay.textContent = `${gap} px`;
+      }
+
       updateCanvas();
     };
 
