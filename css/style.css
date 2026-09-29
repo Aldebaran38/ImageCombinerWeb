@@ -1058,6 +1058,258 @@ html, body {
 }
 
 /* ==========================================================================
+   Animation Playback Controls & Modals
+   ========================================================================== */
+
+/* Playback Bar (docked at bottom of preview area) */
+.playback-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  background-color: rgba(24, 24, 27, 0.95);
+  border-top: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  width: 100%;
+}
+
+.playback-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: var(--primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.playback-btn:hover {
+  background-color: var(--primary-hover);
+  transform: scale(1.05);
+}
+
+.playback-btn:active {
+  background-color: var(--primary-active);
+  transform: scale(0.95);
+}
+
+.playback-scrubber-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.playback-scrubber {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-input);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.playback-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.playback-scrubber::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.playback-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 85px;
+  text-align: right;
+}
+
+/* Speed selector pills */
+.playback-speed-group {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-input);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.speed-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.775rem;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.speed-btn:hover {
+  color: var(--text-main);
+}
+
+.speed-btn.active {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Animated Badge on Queue Cards */
+.badge-animated {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.675rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Progress Modal */
+.modal-progress-card {
+  max-width: 440px;
+  text-align: center;
+}
+
+.progress-status-text {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 10px;
+  background-color: var(--bg-input);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #06fe51);
+  border-radius: var(--radius-full);
+  transition: width 100ms ease;
+}
+
+.progress-sub-text {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* Advanced Timing Modal */
+.anim-timing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.anim-timing-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background-color: var(--bg-sidebar);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.anim-timing-thumb {
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background-color: #000;
+  flex-shrink: 0;
+}
+
+.anim-timing-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.anim-timing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.anim-timing-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.anim-timing-val {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+.anim-timing-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.anim-timing-slider {
+  flex: 1;
+}
+
+.anim-timing-reset-btn {
+  background: transparent;
+  border: 1px solid var(--border-medium);
+  color: var(--text-muted);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.anim-timing-reset-btn:hover {
+  border-color: var(--primary);
+  color: var(--text-main);
+}
+
+/* ==========================================================================
    Animations & Responsive Breakpoints
    ========================================================================== */
 
