@@ -2,7 +2,7 @@
  * Minimal In-Browser Animated WebP Muxer
  * 
  * Assembles multiple WebP frame ArrayBuffers (from HTML5 Canvas)
- * into a valid, standard-compliant animated WebP file.
+ * into a valid, standard-compliant animated WebP file (RIFF container).
  */
 
 (function (root, factory) {
@@ -50,9 +50,16 @@
       const totalChunkLength = 8 + chunkSize + (chunkSize % 2 !== 0 ? 1 : 0);
 
       if (fourCC === 'VP8X') {
-        // Skip root VP8X chunk
-      } else if (fourCC === 'ALPH' || fourCC === 'VP8 ' || fourCC === 'VP8L') {
-        if (fourCC === 'ALPH') hasAlpha = true;
+        // Read alpha flag from source VP8X chunk if present (bit 4 = 0x10)
+        if (offset + 8 < bytes.length && (bytes[offset + 8] & 0x10) !== 0) {
+          hasAlpha = true;
+        }
+      } else if (fourCC === 'ALPH') {
+        hasAlpha = true;
+        keptChunks.push(bytes.subarray(offset, offset + totalChunkLength));
+      } else if (fourCC === 'VP8 ') {
+        keptChunks.push(bytes.subarray(offset, offset + totalChunkLength));
+      } else if (fourCC === 'VP8L') {
         keptChunks.push(bytes.subarray(offset, offset + totalChunkLength));
       }
 
@@ -138,7 +145,16 @@
     // 3. ANIM Chunk (Animation parameters)
     writeFourCC(output, offset, 'ANIM');
     view.setUint32(offset + 4, 6, true);
-    view.setUint32(offset + 8, 0, true); // Background color: 0 (transparent black)
+    // Background color: [Blue, Green, Red, Alpha]
+    // If alpha is present, transparent black (0x00000000). If opaque, opaque black (0xFF000000)
+    if (globalHasAlpha) {
+      view.setUint32(offset + 8, 0x00000000, true);
+    } else {
+      output[offset + 8] = 0x00; // Blue
+      output[offset + 9] = 0x00; // Green
+      output[offset + 10] = 0x00; // Red
+      output[offset + 11] = 0xff; // Alpha
+    }
     view.setUint16(offset + 12, loopCount, true); // 0 = loop infinitely
     offset += 14;
 
@@ -161,9 +177,10 @@
       // Frame Duration in ms (24 bits)
       writeUint24LE(view, offset + 20, pf.duration);
       // Flags (8 bits):
-      // bit 0 = disposal method (1 = dispose to background)
-      // bit 1 = blending method (1 = do not blend, overwrite cell)
-      output[offset + 23] = 0x03; // dispose to background (0x01) | do not blend (0x02)
+      // bit 0 = disposal method (0 = do not dispose, 1 = dispose to background)
+      // bit 1 = blending method (0 = alpha blend, 1 = do not blend / overwrite)
+      // Full frame updates use 0x02 (NO_BLEND = 1, DISPOSE = 0)
+      output[offset + 23] = 0x02;
 
       // Copy frame bitstream data
       output.set(pf.data, offset + 24);
