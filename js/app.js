@@ -369,7 +369,17 @@
    */
   function setupEventListeners() {
     // File Picker Triggers
-    DOM.dropZone.addEventListener('click', () => DOM.fileInput.click());
+    DOM.dropZone.addEventListener('click', (e) => {
+      if (e.target !== DOM.fileInput) {
+        DOM.fileInput.click();
+      }
+    });
+    DOM.dropZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        DOM.fileInput.click();
+      }
+    });
     DOM.emptyBrowseBtn.addEventListener('click', () => DOM.fileInput.click());
     DOM.addMoreBtn.addEventListener('click', () => DOM.fileInput.click());
 
@@ -383,17 +393,21 @@
     // Drag and Drop into Dropzone
     DOM.dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
+      e.stopPropagation();
       DOM.dropZone.classList.add('drag-active');
     });
 
-    DOM.dropZone.addEventListener('dragleave', () => {
+    DOM.dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       DOM.dropZone.classList.remove('drag-active');
     });
 
     DOM.dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
+      e.stopPropagation();
       DOM.dropZone.classList.remove('drag-active');
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         handleFiles(e.dataTransfer.files);
       }
     });
@@ -401,8 +415,12 @@
     // Global window drop to accept images anywhere
     window.addEventListener('dragover', (e) => e.preventDefault());
     window.addEventListener('drop', (e) => {
-      if (!e.target.closest('.photo-queue-list') && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        e.preventDefault();
+      // Ignore if dropped on drop-zone (handled above) or during queue card reorder
+      if (e.target.closest('#drop-zone') || state.draggedIndex !== null) {
+        return;
+      }
+      e.preventDefault();
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         handleFiles(e.dataTransfer.files);
       }
     });
