@@ -811,19 +811,16 @@ html, body {
 /* Single Queue Item Card */
 .queue-card {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  flex-direction: column;
   background-color: var(--bg-input);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  cursor: grab;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
   user-select: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  overflow: hidden;
 }
 
 .queue-card:hover {
-  background-color: var(--bg-card-hover);
   border-color: var(--border-medium);
 }
 
@@ -834,6 +831,20 @@ html, body {
 
 .queue-card.drag-over {
   border-top: 2px solid var(--primary);
+}
+
+.queue-card-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  cursor: grab;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.queue-card-main:hover {
+  background-color: var(--bg-card-hover);
 }
 
 .queue-card-index {
@@ -907,6 +918,11 @@ html, body {
   color: var(--text-main);
 }
 
+.queue-btn.adjust-btn.active {
+  background-color: rgba(59, 130, 246, 0.15);
+  color: var(--primary);
+}
+
 .queue-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
@@ -915,6 +931,98 @@ html, body {
 .queue-btn.remove-btn:hover {
   background-color: var(--danger-bg);
   color: var(--danger);
+}
+
+/* Card Adjustments Expandable Dropdown Panel */
+.queue-card-adjust-panel {
+  padding: 8px 10px 10px 10px;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: default;
+  user-select: auto;
+}
+
+.adjust-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+
+.adjust-label {
+  width: 52px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.adjust-range {
+  flex: 1;
+  height: 4px;
+}
+
+.adjust-val {
+  width: 44px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.adjust-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+.btn-text-reset {
+  background: none;
+  border: none;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.btn-text-reset:hover {
+  color: var(--primary);
+}
+
+/* Queue Footer & Global Reset */
+.queue-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-subtle);
+  margin-top: 2px;
+}
+
+.queue-reset-all-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  padding: 6px 10px;
+}
+
+/* Preview Header Drag Tip */
+.preview-drag-tip {
+  font-size: 0.7rem;
+  font-family: var(--font-sans);
+  color: var(--primary);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  margin-left: 6px;
 }
 
 /* ==========================================================================

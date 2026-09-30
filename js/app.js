@@ -16,8 +16,8 @@
     return;
   }
 
-  const { calculateCanvasSize, findOptimalDistribution } = Layout;
-  const { loadImageFromFile, renderCollage, exportCanvas, exportAnimation } = Compositor;
+  const { calculateCanvasSize, findOptimalDistribution, calculateCellRectangles } = Layout;
+  const { loadImageFromFile, renderCollage, exportCanvas, exportAnimation, calculateCenterCrop } = Compositor;
 
   // Pre-defined aspect ratios
   const ASPECT_RATIOS = {
@@ -56,7 +56,10 @@
     isScrubbing: false,       // User currently dragging timeline scrubber
     animationLoopId: null,    // requestAnimationFrame handle
     lastPlaybackTimestamp: null,
-    draggedIndex: null        // Index of card currently being dragged
+    draggedIndex: null,       // Index of card currently being dragged
+    canvasHoverIndex: -1,     // Index of cell currently hovered on canvas
+    canvasDrag: null,         // Drag state: { index, startX, startY, origOffsetX, origOffsetY, lockedAxis, ... }
+    expandedCardIds: new Set() // Set of image item IDs whose adjustment dropdown is open
   };
 
   // DOM Elements Cache
@@ -87,6 +90,7 @@
     clearAllBtn: document.getElementById('clear-all-btn'),
     photoQueueContainer: document.getElementById('photo-queue-container'),
     photoQueueList: document.getElementById('photo-queue-list'),
+    resetAllAdjustmentsBtn: document.getElementById('reset-all-adjustments-btn'),
     addMoreBtn: document.getElementById('add-more-btn'),
     emptyBrowseBtn: document.getElementById('empty-browse-btn'),
 
@@ -140,6 +144,7 @@
     canvasWrapper: document.getElementById('canvas-wrapper'),
     emptyState: document.getElementById('empty-state'),
     previewMetaTag: document.getElementById('preview-meta-tag'),
+    previewDragTip: document.getElementById('preview-drag-tip'),
     previewRenderTime: document.getElementById('preview-render-time'),
     playbackBar: document.getElementById('playback-bar'),
     playPauseBtn: document.getElementById('play-pause-btn'),
@@ -256,12 +261,17 @@
     const effectiveOuter = getEffectiveOuterBorder();
     const distribution = getDistribution(width, height);
 
+    const activeCell = state.canvasDrag
+      ? state.canvasDrag.index
+      : (state.canvasHoverIndex >= 0 ? state.canvasHoverIndex : null);
+
     renderCollage(DOM.previewCanvas, state.images, distribution, width, height, {
       gapSize: state.gapSize,
       outerBorderSize: effectiveOuter,
       bgColor: state.bgColor,
       isTransparent: state.isTransparent,
-      time: state.currentTime
+      time: state.currentTime,
+      activeCellIndex: activeCell
     });
   }
 
@@ -325,6 +335,7 @@
       DOM.previewMetaTag.textContent = 'No photos added';
       DOM.previewRenderTime.textContent = '';
       DOM.layoutDistributionInfo.textContent = 'Auto';
+      if (DOM.previewDragTip) DOM.previewDragTip.style.display = 'none';
       syncAnimationControlsUI();
       return;
     }
@@ -332,6 +343,7 @@
     DOM.emptyState.style.display = 'none';
     DOM.canvasWrapper.style.display = 'flex';
     DOM.downloadBtn.disabled = false;
+    if (DOM.previewDragTip) DOM.previewDragTip.style.display = 'inline-block';
 
     // Compute layout distribution
     const distribution = getDistribution(width, height);
@@ -368,7 +380,36 @@
   }
 
   /**
-   * Renders the uploaded photos queue list with animated badges.
+   * Synchronizes adjustment sliders and values for a specific image in the queue list.
+   */
+  function syncQueueItemInputs(index) {
+    const item = state.images[index];
+    if (!item) return;
+
+    const li = DOM.photoQueueList.querySelector(`li[data-index="${index}"]`);
+    if (!li) return;
+
+    const rangeX = li.querySelector('.adjust-x');
+    const rangeY = li.querySelector('.adjust-y');
+    const rangeScale = li.querySelector('.adjust-scale');
+    const valX = li.querySelector('.adjust-val-x');
+    const valY = li.querySelector('.adjust-val-y');
+    const valScale = li.querySelector('.adjust-val-scale');
+
+    const pctX = Math.round((item.offsetX || 0) * 100);
+    const pctY = Math.round((item.offsetY || 0) * 100);
+    const scaleStr = (item.scale !== undefined ? item.scale : 1.0).toFixed(2);
+
+    if (rangeX && document.activeElement !== rangeX) rangeX.value = pctX;
+    if (valX) valX.textContent = `${pctX}%`;
+    if (rangeY && document.activeElement !== rangeY) rangeY.value = pctY;
+    if (valY) valY.textContent = `${pctY}%`;
+    if (rangeScale && document.activeElement !== rangeScale) rangeScale.value = scaleStr;
+    if (valScale) valScale.textContent = `${scaleStr}x`;
+  }
+
+  /**
+   * Renders the uploaded photos queue list with adjustment dropdowns.
    */
   function renderPhotoQueue() {
     const count = state.images.length;
@@ -391,8 +432,10 @@
     state.images.forEach((item, index) => {
       const li = document.createElement('li');
       li.className = 'queue-card';
-      li.draggable = true;
       li.dataset.index = index;
+      li.dataset.id = item.id;
+
+      const isExpanded = state.expandedCardIds.has(item.id);
 
       let sizeStr = '';
       if (item.size) {
@@ -405,27 +448,124 @@
         ? `<span class="badge-animated">GIF • ${item.animation.totalDuration.toFixed(1)}s</span>`
         : '';
 
+      const pctX = Math.round((item.offsetX || 0) * 100);
+      const pctY = Math.round((item.offsetY || 0) * 100);
+      const scaleStr = (item.scale !== undefined ? item.scale : 1.0).toFixed(2);
+
       li.innerHTML = `
-        <span class="queue-card-index">${index + 1}</span>
-        <div class="queue-card-thumb-wrap">
-          <img class="queue-card-thumb" src="${item.url}" alt="${item.name}" loading="lazy">
+        <div class="queue-card-main" draggable="true">
+          <span class="queue-card-index">${index + 1}</span>
+          <div class="queue-card-thumb-wrap">
+            <img class="queue-card-thumb" src="${item.url}" alt="${item.name}" loading="lazy">
+          </div>
+          <div class="queue-card-info">
+            <span class="queue-card-name" title="${item.name}">${item.name}${animBadge}</span>
+            <span class="queue-card-meta">${item.width}×${item.height} px${sizeStr ? ' • ' + sizeStr : ''}</span>
+          </div>
+          <div class="queue-card-actions">
+            <button type="button" class="queue-btn adjust-btn ${isExpanded ? 'active' : ''}" title="Adjust Offset & Scale" aria-label="Adjust offset and scale">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+            </button>
+            <button type="button" class="queue-btn move-up-btn" title="Move Up" ${index === 0 ? 'disabled' : ''} aria-label="Move item up">
+              ▲
+            </button>
+            <button type="button" class="queue-btn move-down-btn" title="Move Down" ${index === count - 1 ? 'disabled' : ''} aria-label="Move item down">
+              ▼
+            </button>
+            <button type="button" class="queue-btn remove-btn" title="Remove" aria-label="Remove item">
+              &times;
+            </button>
+          </div>
         </div>
-        <div class="queue-card-info">
-          <span class="queue-card-name" title="${item.name}">${item.name}${animBadge}</span>
-          <span class="queue-card-meta">${item.width}×${item.height} px${sizeStr ? ' • ' + sizeStr : ''}</span>
-        </div>
-        <div class="queue-card-actions">
-          <button type="button" class="queue-btn move-up-btn" title="Move Up" ${index === 0 ? 'disabled' : ''} aria-label="Move item up">
-            ▲
-          </button>
-          <button type="button" class="queue-btn move-down-btn" title="Move Down" ${index === count - 1 ? 'disabled' : ''} aria-label="Move item down">
-            ▼
-          </button>
-          <button type="button" class="queue-btn remove-btn" title="Remove" aria-label="Remove item">
-            &times;
-          </button>
+        <div class="queue-card-adjust-panel" style="${isExpanded ? 'display: flex;' : 'display: none;'}" draggable="false">
+          <div class="adjust-row">
+            <span class="adjust-label">Offset X</span>
+            <input type="range" class="form-range adjust-range adjust-x" min="-100" max="100" step="1" value="${pctX}">
+            <span class="adjust-val adjust-val-x">${pctX}%</span>
+          </div>
+          <div class="adjust-row">
+            <span class="adjust-label">Offset Y</span>
+            <input type="range" class="form-range adjust-range adjust-y" min="-100" max="100" step="1" value="${pctY}">
+            <span class="adjust-val adjust-val-y">${pctY}%</span>
+          </div>
+          <div class="adjust-row">
+            <span class="adjust-label">Scale</span>
+            <input type="range" class="form-range adjust-range adjust-scale" min="1.0" max="3.0" step="0.05" value="${scaleStr}">
+            <span class="adjust-val adjust-val-scale">${scaleStr}x</span>
+          </div>
+          <div class="adjust-actions-row">
+            <button type="button" class="btn-text-reset adjust-reset-single-btn">Reset photo</button>
+          </div>
         </div>
       `;
+
+      const cardMain = li.querySelector('.queue-card-main');
+      const adjustBtn = li.querySelector('.adjust-btn');
+      const adjustPanel = li.querySelector('.queue-card-adjust-panel');
+      const rangeX = li.querySelector('.adjust-x');
+      const rangeY = li.querySelector('.adjust-y');
+      const rangeScale = li.querySelector('.adjust-scale');
+      const valX = li.querySelector('.adjust-val-x');
+      const valY = li.querySelector('.adjust-val-y');
+      const valScale = li.querySelector('.adjust-val-scale');
+      const resetSingleBtn = li.querySelector('.adjust-reset-single-btn');
+
+      // Prevent card dragging when interacting with sliders
+      adjustPanel.addEventListener('mousedown', (e) => e.stopPropagation());
+      adjustPanel.addEventListener('dragstart', (e) => e.preventDefault());
+
+      // Toggle adjust dropdown panel
+      adjustBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (state.expandedCardIds.has(item.id)) {
+          state.expandedCardIds.delete(item.id);
+          adjustPanel.style.display = 'none';
+          adjustBtn.classList.remove('active');
+        } else {
+          state.expandedCardIds.add(item.id);
+          adjustPanel.style.display = 'flex';
+          adjustBtn.classList.add('active');
+        }
+      });
+
+      // Offset X Slider
+      rangeX.addEventListener('input', (e) => {
+        item.offsetX = parseInt(e.target.value, 10) / 100;
+        valX.textContent = `${e.target.value}%`;
+        if (!hasAnimatedImages()) renderCurrentCanvasFrame();
+      });
+
+      // Offset Y Slider
+      rangeY.addEventListener('input', (e) => {
+        item.offsetY = parseInt(e.target.value, 10) / 100;
+        valY.textContent = `${e.target.value}%`;
+        if (!hasAnimatedImages()) renderCurrentCanvasFrame();
+      });
+
+      // Scale Slider
+      rangeScale.addEventListener('input', (e) => {
+        item.scale = parseFloat(e.target.value);
+        valScale.textContent = `${item.scale.toFixed(2)}x`;
+        if (!hasAnimatedImages()) renderCurrentCanvasFrame();
+      });
+
+      // Reset Single Photo
+      resetSingleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        item.offsetX = 0;
+        item.offsetY = 0;
+        item.scale = 1.0;
+        rangeX.value = 0;
+        rangeY.value = 0;
+        rangeScale.value = 1.0;
+        valX.textContent = '0%';
+        valY.textContent = '0%';
+        valScale.textContent = '1.00x';
+        if (!hasAnimatedImages()) renderCurrentCanvasFrame();
+      });
 
       // Move Up Action
       li.querySelector('.move-up-btn').addEventListener('click', (e) => {
@@ -455,20 +595,25 @@
       li.querySelector('.remove-btn').addEventListener('click', (e) => {
         e.stopPropagation();
         URL.revokeObjectURL(item.url);
+        state.expandedCardIds.delete(item.id);
         state.images.splice(index, 1);
         renderPhotoQueue();
         updateCanvas();
       });
 
-      // Drag and Drop Sorting Listeners
-      li.addEventListener('dragstart', (e) => {
+      // Drag and Drop Sorting Listeners (on cardMain)
+      cardMain.addEventListener('dragstart', (e) => {
+        if (e.target.closest('.queue-btn') || e.target.closest('input')) {
+          e.preventDefault();
+          return;
+        }
         state.draggedIndex = index;
         li.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', index);
       });
 
-      li.addEventListener('dragend', () => {
+      cardMain.addEventListener('dragend', () => {
         li.classList.remove('dragging');
         state.draggedIndex = null;
         document.querySelectorAll('.queue-card').forEach(c => c.classList.remove('drag-over'));
@@ -596,9 +741,249 @@
   }
 
   /**
+   * Translates pointer coordinates to internal canvas pixel coordinates.
+   */
+  function getCanvasPointerPos(clientPos) {
+    const rect = DOM.previewCanvas.getBoundingClientRect();
+    const scaleX = DOM.previewCanvas.width / (rect.width || 1);
+    const scaleY = DOM.previewCanvas.height / (rect.height || 1);
+    return {
+      x: (clientPos.clientX - rect.left) * scaleX,
+      y: (clientPos.clientY - rect.top) * scaleY
+    };
+  }
+
+  /**
+   * Finds the image cell index at given canvas coordinates.
+   */
+  function getCellIndexAtPoint(canvasX, canvasY) {
+    if (state.images.length === 0) return -1;
+    const { width, height } = getCanvasDimensions();
+    const effectiveOuter = getEffectiveOuterBorder();
+    const distribution = getDistribution(width, height);
+    if (!distribution || distribution.length === 0) return -1;
+
+    const rects = calculateCellRectangles(distribution, width, height, state.gapSize, effectiveOuter);
+    for (let i = 0; i < rects.length && i < state.images.length; i++) {
+      const r = rects[i];
+      if (canvasX >= r.x && canvasX <= r.x + r.width && canvasY >= r.y && canvasY <= r.y + r.height) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Canvas Pointer Down - Initiates image panning within its cell.
+   */
+  function handleCanvasPointerDown(e) {
+    if (state.images.length === 0) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const pointer = getCanvasPointerPos({ clientX, clientY });
+    const cellIndex = getCellIndexAtPoint(pointer.x, pointer.y);
+    if (cellIndex === -1) return;
+
+    const item = state.images[cellIndex];
+    if (!item) return;
+
+    const { width, height } = getCanvasDimensions();
+    const effectiveOuter = getEffectiveOuterBorder();
+    const distribution = getDistribution(width, height);
+    const rects = calculateCellRectangles(distribution, width, height, state.gapSize, effectiveOuter);
+    const cellRect = rects[cellIndex];
+
+    const imgWidth = item.width;
+    const imgHeight = item.height;
+    const crop = calculateCenterCrop(
+      imgWidth,
+      imgHeight,
+      cellRect.width,
+      cellRect.height,
+      item.offsetX,
+      item.offsetY,
+      item.scale
+    );
+
+    state.canvasDrag = {
+      index: cellIndex,
+      startX: clientX,
+      startY: clientY,
+      origOffsetX: item.offsetX || 0,
+      origOffsetY: item.offsetY || 0,
+      lockedAxis: null,
+      cellRect: cellRect,
+      sWidth: crop.sWidth,
+      sHeight: crop.sHeight,
+      maxShiftX: crop.maxShiftX,
+      maxShiftY: crop.maxShiftY
+    };
+
+    DOM.previewCanvas.style.cursor = 'grabbing';
+    if (!hasAnimatedImages()) {
+      renderCurrentCanvasFrame();
+    }
+  }
+
+  /**
+   * Canvas Pointer Move - Performs gesture-locked axis snapping and direct panning.
+   */
+  function handleCanvasPointerMove(e) {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    if (state.canvasDrag) {
+      if (e.touches && e.cancelable) e.preventDefault();
+
+      const dx = clientX - state.canvasDrag.startX;
+      const dy = clientY - state.canvasDrag.startY;
+
+      // Detect initial gesture lock direction if not already locked
+      if (state.canvasDrag.lockedAxis === null) {
+        const dist = Math.hypot(dx, dy);
+        if (dist >= 5) {
+          const absDx = Math.abs(dx);
+          const absDy = Math.abs(dy);
+          // If diagonal (angle between ~26° and ~64°), unlock both axes for 2D movement
+          if (absDy >= 0.5 * absDx && absDx >= 0.5 * absDy) {
+            state.canvasDrag.lockedAxis = 'both';
+          } else if (absDy > absDx) {
+            state.canvasDrag.lockedAxis = 'y';
+          } else {
+            state.canvasDrag.lockedAxis = 'x';
+          }
+        }
+      }
+
+      const effDx = (state.canvasDrag.lockedAxis === 'y') ? 0 : dx;
+      const effDy = (state.canvasDrag.lockedAxis === 'x') ? 0 : dy;
+
+      const canvasBoundingRect = DOM.previewCanvas.getBoundingClientRect();
+      const cssScaleX = canvasBoundingRect.width / (DOM.previewCanvas.width || 1);
+      const cssScaleY = canvasBoundingRect.height / (DOM.previewCanvas.height || 1);
+
+      const effCanvasDx = effDx / (cssScaleX || 1);
+      const effCanvasDy = effDy / (cssScaleY || 1);
+
+      // Convert canvas pixel delta to image pixel delta
+      const imgDx = effCanvasDx * (state.canvasDrag.sWidth / (state.canvasDrag.cellRect.width || 1));
+      const imgDy = effCanvasDy * (state.canvasDrag.sHeight / (state.canvasDrag.cellRect.height || 1));
+
+      // Dragging mouse to the right shifts the crop window to the left
+      const deltaOffsetX = state.canvasDrag.maxShiftX > 0 ? (-imgDx / state.canvasDrag.maxShiftX) : 0;
+      const deltaOffsetY = state.canvasDrag.maxShiftY > 0 ? (-imgDy / state.canvasDrag.maxShiftY) : 0;
+
+      const item = state.images[state.canvasDrag.index];
+      if (item) {
+        const newOffsetX = Math.max(-1.0, Math.min(1.0, state.canvasDrag.origOffsetX + deltaOffsetX));
+        const newOffsetY = Math.max(-1.0, Math.min(1.0, state.canvasDrag.origOffsetY + deltaOffsetY));
+
+        item.offsetX = Math.round(newOffsetX * 1000) / 1000;
+        item.offsetY = Math.round(newOffsetY * 1000) / 1000;
+
+        if (!hasAnimatedImages()) {
+          renderCurrentCanvasFrame();
+        }
+        syncQueueItemInputs(state.canvasDrag.index);
+      }
+      return;
+    }
+
+    // Hover state updates when not actively dragging
+    if (state.images.length > 0) {
+      const pointer = getCanvasPointerPos({ clientX, clientY });
+      const cellIdx = getCellIndexAtPoint(pointer.x, pointer.y);
+      if (cellIdx !== state.canvasHoverIndex) {
+        state.canvasHoverIndex = cellIdx;
+        DOM.previewCanvas.style.cursor = cellIdx >= 0 ? 'grab' : 'default';
+        if (!hasAnimatedImages()) {
+          renderCurrentCanvasFrame();
+        }
+      }
+    }
+  }
+
+  /**
+   * Canvas Pointer Up - Releases active drag.
+   */
+  function handleCanvasPointerUp() {
+    if (state.canvasDrag) {
+      state.canvasDrag = null;
+      DOM.previewCanvas.style.cursor = state.canvasHoverIndex >= 0 ? 'grab' : 'default';
+      if (!hasAnimatedImages()) {
+        renderCurrentCanvasFrame();
+      }
+    }
+  }
+
+  /**
+   * Canvas Wheel - Shift + Scroll Wheel zooms the hovered cell between 1.0x and 3.0x.
+   */
+  function handleCanvasWheel(e) {
+    if (!e.shiftKey) return;
+    if (state.images.length === 0) return;
+
+    const pointer = getCanvasPointerPos(e);
+    const cellIdx = getCellIndexAtPoint(pointer.x, pointer.y);
+    if (cellIdx === -1) return;
+
+    e.preventDefault();
+    const item = state.images[cellIdx];
+    if (!item) return;
+
+    const currentScale = item.scale !== undefined ? item.scale : 1.0;
+    const zoomStep = 0.05;
+    const delta = e.deltaY < 0 ? zoomStep : -zoomStep;
+    const newScale = Math.max(1.0, Math.min(3.0, Math.round((currentScale + delta) * 100) / 100));
+
+    if (newScale !== item.scale) {
+      item.scale = newScale;
+      if (!hasAnimatedImages()) {
+        renderCurrentCanvasFrame();
+      }
+      syncQueueItemInputs(cellIdx);
+    }
+  }
+
+  /**
    * Initializes all user interface event listeners.
    */
   function setupEventListeners() {
+    // Canvas Pan & Zoom Interactivity
+    DOM.previewCanvas.addEventListener('mousedown', handleCanvasPointerDown);
+    window.addEventListener('mousemove', handleCanvasPointerMove);
+    window.addEventListener('mouseup', handleCanvasPointerUp);
+
+    DOM.previewCanvas.addEventListener('touchstart', handleCanvasPointerDown, { passive: true });
+    window.addEventListener('touchmove', handleCanvasPointerMove, { passive: false });
+    window.addEventListener('touchend', handleCanvasPointerUp, { passive: true });
+
+    DOM.previewCanvas.addEventListener('mouseleave', () => {
+      if (!state.canvasDrag && state.canvasHoverIndex !== -1) {
+        state.canvasHoverIndex = -1;
+        DOM.previewCanvas.style.cursor = 'default';
+        if (!hasAnimatedImages()) {
+          renderCurrentCanvasFrame();
+        }
+      }
+    });
+
+    DOM.previewCanvas.addEventListener('wheel', handleCanvasWheel, { passive: false });
+
+    // Reset All Offsets & Scales Button
+    if (DOM.resetAllAdjustmentsBtn) {
+      DOM.resetAllAdjustmentsBtn.addEventListener('click', () => {
+        state.images.forEach(img => {
+          img.offsetX = 0;
+          img.offsetY = 0;
+          img.scale = 1.0;
+        });
+        renderPhotoQueue();
+        updateCanvas();
+      });
+    }
+
     // File Picker Triggers
     DOM.dropZone.addEventListener('click', (e) => {
       if (e.target !== DOM.fileInput) {

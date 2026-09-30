@@ -22,30 +22,46 @@
     : (typeof window !== 'undefined' && window.ImageCombinerLayout ? window.ImageCombinerLayout.calculateCellRectangles : null);
 
   /**
-   * Calculates center-crop source rectangle coordinates.
+   * Calculates center-crop source rectangle coordinates with offset and zoom support.
+   * Ensures the cropped window never exceeds the image boundaries (no empty gaps).
    */
-  function calculateCenterCrop(imgWidth, imgHeight, targetWidth, targetHeight) {
+  function calculateCenterCrop(imgWidth, imgHeight, targetWidth, targetHeight, offsetX, offsetY, scale) {
+    scale = Math.max(1.0, Math.min(3.0, Number(scale) || 1.0));
+    offsetX = Math.max(-1.0, Math.min(1.0, Number(offsetX) || 0));
+    offsetY = Math.max(-1.0, Math.min(1.0, Number(offsetY) || 0));
+
     const imgRatio = imgWidth / imgHeight;
     const targetRatio = targetWidth / targetHeight;
 
-    let sWidth = imgWidth;
-    let sHeight = imgHeight;
-    let sx = 0;
-    let sy = 0;
+    let baseSWidth;
+    let baseSHeight;
 
     if (imgRatio > targetRatio) {
-      sHeight = imgHeight;
-      sWidth = imgHeight * targetRatio;
-      sx = (imgWidth - sWidth) / 2;
-      sy = 0;
+      baseSHeight = imgHeight;
+      baseSWidth = imgHeight * targetRatio;
     } else {
-      sWidth = imgWidth;
-      sHeight = imgWidth / targetRatio;
-      sx = 0;
-      sy = (imgHeight - sHeight) / 2;
+      baseSWidth = imgWidth;
+      baseSHeight = imgWidth / targetRatio;
     }
 
-    return { sx, sy, sWidth, sHeight };
+    // Applying scale zooms into the image (smaller source rectangle)
+    const sWidth = baseSWidth / scale;
+    const sHeight = baseSHeight / scale;
+
+    const maxShiftX = Math.max(0, (imgWidth - sWidth) / 2);
+    const maxShiftY = Math.max(0, (imgHeight - sHeight) / 2);
+
+    const baseSx = (imgWidth - sWidth) / 2;
+    const baseSy = (imgHeight - sHeight) / 2;
+
+    let sx = baseSx + (offsetX * maxShiftX);
+    let sy = baseSy + (offsetY * maxShiftY);
+
+    // Strictly clamp within image boundary
+    sx = Math.max(0, Math.min(imgWidth - sWidth, sx));
+    sy = Math.max(0, Math.min(imgHeight - sHeight, sy));
+
+    return { sx, sy, sWidth, sHeight, maxShiftX, maxShiftY };
   }
 
   /**
@@ -213,7 +229,10 @@
             height: animation.height,
             isAnimated: true,
             animation: animation,
-            startOffset: 0
+            startOffset: 0,
+            offsetX: 0,
+            offsetY: 0,
+            scale: 1.0
           };
         }
       } catch (err) {
@@ -240,7 +259,10 @@
             height: animation.height,
             isAnimated: true,
             animation: animation,
-            startOffset: 0
+            startOffset: 0,
+            offsetX: 0,
+            offsetY: 0,
+            scale: 1.0
           };
         }
       } catch (err) {
@@ -265,7 +287,10 @@
           height: img.naturalHeight || img.height,
           isAnimated: false,
           animation: null,
-          startOffset: 0
+          startOffset: 0,
+          offsetX: 0,
+          offsetY: 0,
+          scale: 1.0
         });
       };
 
@@ -347,9 +372,15 @@
       const imgWidth = img.naturalWidth || img.width;
       const imgHeight = img.naturalHeight || img.height;
 
-      if (!imgWidth || !imgHeight) continue;
-
-      const crop = calculateCenterCrop(imgWidth, imgHeight, rect.width, rect.height);
+      const crop = calculateCenterCrop(
+        imgWidth,
+        imgHeight,
+        rect.width,
+        rect.height,
+        item.offsetX,
+        item.offsetY,
+        item.scale
+      );
 
       ctx.drawImage(
         img,
@@ -362,6 +393,22 @@
         rect.width,
         rect.height
       );
+    }
+
+    // Active cell highlight for canvas hover / drag interactivity
+    if (
+      options.activeCellIndex !== undefined &&
+      options.activeCellIndex !== null &&
+      options.activeCellIndex >= 0 &&
+      options.activeCellIndex < count
+    ) {
+      const activeRect = rects[options.activeCellIndex];
+      ctx.save();
+      ctx.strokeStyle = '#3b82f6';
+      const lw = Math.max(2, Math.min(6, Math.round(canvasWidth / 350)));
+      ctx.lineWidth = lw;
+      ctx.strokeRect(activeRect.x + lw / 2, activeRect.y + lw / 2, activeRect.width - lw, activeRect.height - lw);
+      ctx.restore();
     }
   }
 
