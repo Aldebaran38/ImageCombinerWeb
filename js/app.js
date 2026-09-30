@@ -459,25 +459,28 @@
             <img class="queue-card-thumb" src="${item.url}" alt="${item.name}" loading="lazy">
           </div>
           <div class="queue-card-info">
-            <span class="queue-card-name" title="${item.name}">${item.name}${animBadge}</span>
+            <div class="queue-card-name-row">
+              <span class="queue-card-name" title="${item.name}">${item.name}</span>
+              ${animBadge}
+            </div>
+            <div class="queue-card-actions">
+              <button type="button" class="queue-btn adjust-btn ${isExpanded ? 'active' : ''}" title="Adjust Offset & Scale" aria-label="Adjust offset and scale">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </button>
+              <button type="button" class="queue-btn move-up-btn" title="Move Up" ${index === 0 ? 'disabled' : ''} aria-label="Move item up">
+                ▲
+              </button>
+              <button type="button" class="queue-btn move-down-btn" title="Move Down" ${index === count - 1 ? 'disabled' : ''} aria-label="Move item down">
+                ▼
+              </button>
+              <button type="button" class="queue-btn remove-btn" title="Remove" aria-label="Remove item">
+                &times;
+              </button>
+            </div>
             <span class="queue-card-meta">${item.width}×${item.height} px${sizeStr ? ' • ' + sizeStr : ''}</span>
-          </div>
-          <div class="queue-card-actions">
-            <button type="button" class="queue-btn adjust-btn ${isExpanded ? 'active' : ''}" title="Adjust Offset & Scale" aria-label="Adjust offset and scale">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-            </button>
-            <button type="button" class="queue-btn move-up-btn" title="Move Up" ${index === 0 ? 'disabled' : ''} aria-label="Move item up">
-              ▲
-            </button>
-            <button type="button" class="queue-btn move-down-btn" title="Move Down" ${index === count - 1 ? 'disabled' : ''} aria-label="Move item down">
-              ▼
-            </button>
-            <button type="button" class="queue-btn remove-btn" title="Remove" aria-label="Remove item">
-              &times;
-            </button>
           </div>
         </div>
         <div class="queue-card-adjust-panel" style="${isExpanded ? 'display: flex;' : 'display: none;'}" draggable="false">
