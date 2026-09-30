@@ -6,9 +6,12 @@
   <title>ImageCombiner Web — Combine Photos Easily</title>
   <meta name="description" content="A fast, private, and simple tool to combine multiple photos into a single clean grid image right inside your browser.">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%2327272a%22/><rect x=%2216%22 y=%2216%22 width=%2230%22 height=%2230%22 rx=%226%22 fill=%22%233b82f6%22/><rect x=%2254%22 y=%2216%22 width=%2230%22 height=%2230%22 rx=%226%22 fill=%22%2360a5fa%22/><rect x=%2216%22 y=%2254%22 width=%2230%22 height=%2230%22 rx=%226%22 fill=%22%2393c5fd%22/><rect x=%2254%22 y=%2254%22 width=%2230%22 height=%2230%22 rx=%226%22 fill=%22%2338bdf8%22/></svg>">
 </head>
-<body>
+<body class="theme-light-gray">
   <!-- Application Container -->
   <div class="app-layout">
     
@@ -42,49 +45,119 @@
     <!-- Main Workspace -->
     <main class="app-main">
       
-      <!-- Left Panel: Settings and Photo List -->
-      <aside class="sidebar-panel">
-        <div class="sidebar-scroll">
+      <!-- Left Column: Added Media -->
+      <aside class="col-left" id="left-sidebar">
+        <!-- Section 1: Upload & Queue -->
+        <section class="card-section content-box-section" id="photos-section">
+          <div class="section-header">
+            <div class="section-title-wrap">
+              <h2 class="section-title">Added Media</h2>
+              <span id="photo-count-badge" class="badge">0 items</span>
+            </div>
+            <button id="clear-all-btn" class="btn btn-subtle-danger" type="button" title="Remove all photos" style="display: none;">
+              Clear All
+            </button>
+          </div>
 
-          <!-- Section 1: Upload & Queue -->
-          <section class="card-section">
-            <div class="section-header">
-              <div class="section-title-wrap">
-                <h2 class="section-title">Photos</h2>
-                <span id="photo-count-badge" class="badge">0 photos</span>
-              </div>
-              <button id="clear-all-btn" class="btn btn-subtle-danger" type="button" title="Remove all photos" style="display: none;">
-                Clear All
+          <!-- Drag and drop zone -->
+          <input type="file" id="file-input" multiple accept="image/png,image/jpeg,image/webp,image/bmp,image/gif,image/svg+xml" class="visually-hidden">
+          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload photos by clicking or dropping files here">
+            <div class="drop-zone-content">
+              <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <p class="drop-zone-primary"><strong>Click to browse</strong> or drag photos here</p>
+              <p class="drop-zone-hint">Supports PNG, JPG, WEBP, GIF, SVG</p>
+            </div>
+          </div>
+
+          <!-- Uploaded Photos Queue -->
+          <div id="photo-queue-container" class="photo-queue-container" style="display: none;">
+            <div class="queue-toolbar">
+              <span class="queue-tip">Drag or use arrows to reorder</span>
+              <button id="add-more-btn" class="btn btn-xs btn-outline" type="button">
+                + Add More
               </button>
             </div>
+            <ul id="photo-queue-list" class="photo-queue-list" aria-label="List of uploaded photos"></ul>
+          </div>
+        </section>
+      </aside>
 
-            <!-- Drag and drop zone -->
-            <input type="file" id="file-input" multiple accept="image/png,image/jpeg,image/webp,image/bmp,image/gif,image/svg+xml" class="visually-hidden">
-            <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload photos by clicking or dropping files here">
-              <div class="drop-zone-content">
-                <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <p class="drop-zone-primary"><strong>Click to browse</strong> or drag photos here</p>
-                <p class="drop-zone-hint">Supports PNG, JPG, WEBP, GIF, SVG</p>
-              </div>
+      <!-- Center Column: Preview & Game Promotion -->
+      <section class="col-center" id="center-preview-area">
+        
+        <!-- Preview Panel Header Bar -->
+        <div class="preview-header-bar">
+          <div class="preview-status">
+            <span class="preview-title">Live Preview</span>
+            <span id="preview-meta-tag" class="preview-meta-tag">No photos added</span>
+          </div>
+
+          <div class="preview-actions">
+            <span id="preview-render-time" class="render-stat"></span>
+          </div>
+        </div>
+
+        <!-- Canvas Viewport -->
+        <div class="canvas-viewport" id="canvas-viewport">
+          
+          <!-- Empty State (When no images are uploaded) -->
+          <div id="empty-state" class="empty-state">
+            <div class="empty-icon-wrap">
+              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
             </div>
+            <h3 class="empty-title">Your combined image will appear here</h3>
+            <p class="empty-desc">Upload two or more photos on the left to immediately see the combined collage.</p>
+            <button type="button" id="empty-browse-btn" class="btn btn-outline">
+              Select Photos to Start
+            </button>
+          </div>
 
-            <!-- Uploaded Photos Queue -->
-            <div id="photo-queue-container" class="photo-queue-container" style="display: none;">
-              <div class="queue-toolbar">
-                <span class="queue-tip">Drag cards or use arrows to change order</span>
-                <button id="add-more-btn" class="btn btn-xs btn-outline" type="button">
-                  + Add More
-                </button>
-              </div>
-              <ul id="photo-queue-list" class="photo-queue-list" aria-label="List of uploaded photos"></ul>
-            </div>
-          </section>
+          <!-- Active Canvas Wrapper -->
+          <div id="canvas-wrapper" class="canvas-wrapper" style="display: none;">
+            <canvas id="preview-canvas" class="preview-canvas" aria-label="Combined image preview canvas"></canvas>
+          </div>
 
-          <!-- Section 2: Canvas Size & Shape -->
+        </div>
+
+        <!-- Playback Media Bar for Animations -->
+        <div id="playback-bar" class="playback-bar" style="display: none;">
+          <button type="button" id="play-pause-btn" class="playback-btn" title="Play / Pause" aria-label="Play or pause animation">
+            <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          </button>
+          <div class="playback-scrubber-wrap">
+            <input type="range" id="playback-scrubber" min="0" max="1000" step="1" value="0" class="playback-scrubber" aria-label="Timeline scrubber">
+            <span id="playback-time-display" class="playback-time">0.0s / 3.0s</span>
+          </div>
+          <div class="playback-speed-group">
+            <button type="button" class="speed-btn" data-speed="0.5">0.5x</button>
+            <button type="button" class="speed-btn active" data-speed="1">1x</button>
+            <button type="button" class="speed-btn" data-speed="2">2x</button>
+          </div>
+        </div>
+
+        <!-- Game Promotion Banner Placeholder -->
+        <div class="ad-banner-section" id="game-ad-section">
+          <div class="ad-placeholder-box">
+            <span class="ad-placeholder-label">Game Promotion / Ad Space</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Column: Settings + Pinned Download Dock -->
+      <aside class="col-right" id="right-sidebar">
+        <div class="params-scroll-area">
+
+          <!-- Section 2: Canvas Size & Shape (Includes Grid Layout) -->
           <section class="card-section">
             <div class="section-header">
               <h2 class="section-title">Canvas Dimensions</h2>
@@ -144,6 +217,22 @@
             <div class="resolution-summary">
               <span class="summary-label">Final Image Size:</span>
               <strong id="resolution-text" class="summary-value">1414 × 1414 px</strong>
+            </div>
+
+            <!-- Grid Layout (Moved to Canvas Dimensions) -->
+            <div class="control-group" style="margin-top: 14px;">
+              <div class="label-with-value">
+                <label for="layout-mode-select" class="control-label">Grid Layout</label>
+                <span id="layout-distribution-info" class="value-indicator">Auto</span>
+              </div>
+              <select id="layout-mode-select" class="form-select">
+                <option value="auto" selected>Auto (Balanced, closest to square)</option>
+                <option value="1">1 Column (Vertical Stack)</option>
+                <option value="2">2 Columns</option>
+                <option value="3">3 Columns</option>
+                <option value="4">4 Columns</option>
+                <option value="single-row">Single Row (Horizontal Strip)</option>
+              </select>
             </div>
           </section>
 
@@ -210,26 +299,13 @@
                 <button type="button" class="swatch-btn" data-color="#3b82f6" title="Vibrant Blue" style="background-color: #3b82f6;"></button>
               </div>
             </div>
-
-            <!-- Layout Arrangement Info -->
-            <div class="control-group">
-              <div class="label-with-value">
-                <label for="layout-mode-select" class="control-label">Grid Layout</label>
-                <span id="layout-distribution-info" class="value-indicator">Auto</span>
-              </div>
-              <select id="layout-mode-select" class="form-select">
-                <option value="auto" selected>Auto (Balanced, closest to square)</option>
-                <option value="1">1 Column (Vertical Stack)</option>
-                <option value="2">2 Columns</option>
-                <option value="3">3 Columns</option>
-                <option value="4">4 Columns</option>
-                <option value="single-row">Single Row (Horizontal Strip)</option>
-              </select>
-            </div>
           </section>
 
-          <!-- Section 4: Export Options -->
-          <section class="card-section">
+        </div>
+
+        <!-- Section 4: Save & Download Dock (Pinned at bottom) -->
+        <div class="download-dock-section">
+          <section class="card-section download-dock-card">
             <div class="section-header">
               <h2 class="section-title">Save & Download</h2>
             </div>
@@ -239,11 +315,11 @@
               <div class="control-group">
                 <label for="export-format-select" class="control-label">File Format</label>
                 <select id="export-format-select" class="form-select">
-                  <option value="image/png" selected>PNG (Lossless Snapshot)</option>
-                  <option value="image/jpeg">JPEG (Compressed Snapshot)</option>
+                  <option value="image/png" selected>PNG (Lossless)</option>
+                  <option value="image/jpeg">JPEG (Compressed)</option>
                   <option value="image/gif">GIF (Animated)</option>
                   <option value="image/webp-anim">WEBP (Animated)</option>
-                  <option value="image/webp">WEBP (Static Snapshot)</option>
+                  <option value="image/webp">WEBP (Static)</option>
                 </select>
               </div>
 
@@ -258,7 +334,7 @@
             </div>
 
             <!-- Frame Rate (FPS) Selector (for GIF/WebP) -->
-            <div id="fps-control-group" class="control-group" style="display: none; margin-top: 12px;">
+            <div id="fps-control-group" class="control-group" style="display: none; margin-top: 10px;">
               <div class="label-with-value">
                 <label for="export-fps-select" class="control-label">Frame Rate (FPS)</label>
                 <span id="export-fps-display" class="value-indicator">15 FPS</span>
@@ -272,9 +348,9 @@
             </div>
 
             <!-- Animation Duration Slider -->
-            <div id="duration-control-group" class="control-group" style="display: none; margin-top: 12px;">
+            <div id="duration-control-group" class="control-group" style="display: none; margin-top: 10px;">
               <div class="label-with-value">
-                <label for="anim-duration-range" class="control-label">Animation Duration</label>
+                <label for="anim-duration-range" class="control-label">Duration</label>
                 <span id="anim-duration-display" class="value-indicator">3.0 s</span>
               </div>
               <div class="range-with-number">
@@ -284,7 +360,7 @@
             </div>
 
             <!-- Advanced Animation Timing Toggle Button -->
-            <button type="button" id="toggle-anim-timing-btn" class="btn btn-outline btn-block" style="display: none; margin-top: 12px; margin-bottom: 8px;">
+            <button type="button" id="toggle-anim-timing-btn" class="btn btn-outline btn-block" style="display: none; margin-top: 10px; margin-bottom: 6px;">
               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"/>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -293,7 +369,7 @@
             </button>
 
             <!-- Download Action Button -->
-            <button id="download-btn" class="btn btn-primary btn-large btn-block" type="button" disabled>
+            <button id="download-btn" class="btn btn-primary btn-large btn-block" type="button" disabled style="margin-top: 10px;">
               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="7 10 12 15 17 10" />
@@ -302,69 +378,8 @@
               <span>Download Combined Image</span>
             </button>
           </section>
-
         </div>
       </aside>
-
-      <!-- Right Panel: Canvas Live Preview Area -->
-      <section class="preview-panel">
-        
-        <!-- Preview Panel Header Bar -->
-        <div class="preview-header-bar">
-          <div class="preview-status">
-            <span class="preview-title">Live Preview</span>
-            <span id="preview-meta-tag" class="preview-meta-tag">No photos added</span>
-          </div>
-
-          <div class="preview-actions">
-            <span id="preview-render-time" class="render-stat"></span>
-          </div>
-        </div>
-
-        <!-- Canvas Viewport -->
-        <div class="canvas-viewport" id="canvas-viewport">
-          
-          <!-- Empty State (When no images are uploaded) -->
-          <div id="empty-state" class="empty-state">
-            <div class="empty-icon-wrap">
-              <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
-            </div>
-            <h3 class="empty-title">Your combined image will appear here</h3>
-            <p class="empty-desc">Upload two or more photos on the left to immediately see the combined collage.</p>
-            <button type="button" id="empty-browse-btn" class="btn btn-outline">
-              Select Photos to Start
-            </button>
-          </div>
-
-          <!-- Active Canvas Wrapper -->
-          <div id="canvas-wrapper" class="canvas-wrapper" style="display: none;">
-            <canvas id="preview-canvas" class="preview-canvas" aria-label="Combined image preview canvas"></canvas>
-          </div>
-
-        </div>
-
-        <!-- Playback Media Bar for Animations -->
-        <div id="playback-bar" class="playback-bar" style="display: none;">
-          <button type="button" id="play-pause-btn" class="playback-btn" title="Play / Pause" aria-label="Play or pause animation">
-            <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="display: none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-          </button>
-          <div class="playback-scrubber-wrap">
-            <input type="range" id="playback-scrubber" min="0" max="1000" step="1" value="0" class="playback-scrubber" aria-label="Timeline scrubber">
-            <span id="playback-time-display" class="playback-time">0.0s / 3.0s</span>
-          </div>
-          <div class="playback-speed-group">
-            <button type="button" class="speed-btn" data-speed="0.5">0.5x</button>
-            <button type="button" class="speed-btn active" data-speed="1">1x</button>
-            <button type="button" class="speed-btn" data-speed="2">2x</button>
-          </div>
-        </div>
-
-      </section>
 
     </main>
 
