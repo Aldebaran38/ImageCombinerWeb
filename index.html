@@ -81,6 +81,15 @@
               </button>
             </div>
             <ul id="photo-queue-list" class="photo-queue-list" aria-label="List of uploaded photos"></ul>
+            <div class="queue-footer">
+              <button id="reset-all-adjustments-btn" class="btn btn-xs btn-outline queue-reset-all-btn" type="button" title="Reset offset and scale for all photos">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                Reset Offsets & Scales
+              </button>
+            </div>
           </div>
         </section>
       </aside>
@@ -93,6 +102,7 @@
           <div class="preview-status">
             <span class="preview-title">Live Preview</span>
             <span id="preview-meta-tag" class="preview-meta-tag">No photos added</span>
+            <span id="preview-drag-tip" class="preview-drag-tip" style="display: none;">Drag photo to pan • Shift+Scroll to zoom</span>
           </div>
 
           <div class="preview-actions">
