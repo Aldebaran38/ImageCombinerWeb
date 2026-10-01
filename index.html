@@ -30,6 +30,12 @@
       </div>
 
       <div class="header-right">
+        <a href="https://github.com/Aldebaran38/ImageCombinerWeb" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" aria-label="GitHub Repository" title="GitHub Repository">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
         <button id="about-btn" class="btn btn-ghost" type="button" aria-label="About ImageCombiner">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10" />
@@ -471,7 +477,7 @@
 
     <!-- About Modal Dialog -->
     <div id="about-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="about-modal-title" style="display: none;">
-      <div class="modal-card">
+      <div class="modal-card modal-card-lg">
         <div class="modal-header">
           <div class="modal-title-wrap">
             <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -485,72 +491,187 @@
           <button id="close-modal-btn" class="modal-close-btn" type="button" aria-label="Close dialog">&times;</button>
         </div>
 
-        <div class="modal-body">
+        <div class="modal-body modal-about-body">
           <p class="modal-intro">
-            <strong>ImageCombiner Web</strong> is a private, lightweight, and fast tool that allows you to arrange multiple photos and animated GIFs into a single, clean collage right in your web browser.
+            <strong>ImageCombiner Web</strong> is a fast, private, and simple tool to arrange multiple photos and animated GIFs into a clean collage grid right inside your browser.
           </p>
 
-          <div class="feature-list">
-            <div class="feature-item">
-              <div class="feature-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <!-- 1. Privacy & Terms -->
+          <section class="about-section" aria-labelledby="about-header-privacy">
+            <div class="about-section-header">
+              <span class="about-section-badge">1</span>
+              <h3 id="about-header-privacy" class="about-section-title">Privacy and Terms</h3>
+            </div>
+            <div class="about-privacy-card">
+              <div class="about-privacy-highlight">
+                <div class="privacy-icon-wrap">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <polyline points="9 12 11 14 15 10"/>
+                  </svg>
+                </div>
+                <div class="privacy-content">
+                  <h4>100% In-Browser & Local — No Server Involved</h4>
+                  <p>ImageCombiner Web runs entirely inside your web browser. There is no server, no cloud storage, and no tracking. Your photos and animations never leave your computer or phone. All image cropping, combining, and exporting happen directly in your device's local memory.</p>
+                </div>
               </div>
-              <div class="feature-text">
-                <h3>100% Private & Client-Side</h3>
-                <p>Your photos never leave your device. All calculations, cropping, and rendering happen right in your browser's local memory. No servers, no tracking, and no cloud uploads.</p>
+              <div class="about-terms-row">
+                <p><strong>License & Terms:</strong> This project is free, open source software licensed under the <strong>GNU General Public License v3.0 (GPL-3.0)</strong>. You are completely free to use it, modify it, and share it.</p>
               </div>
+            </div>
+          </section>
+
+          <!-- 2. Features -->
+          <section class="about-section" aria-labelledby="about-header-features">
+            <div class="about-section-header">
+              <span class="about-section-badge">2</span>
+              <h3 id="about-header-features" class="about-section-title">Features</h3>
+            </div>
+            <div class="about-feature-grid">
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Mix Photos & Animated GIFs</h4>
+                  <p>Combine static pictures (PNG, JPG, WebP, SVG, BMP) and animated GIFs together in the exact same collage grid.</p>
+                </div>
+              </div>
+
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Text Overlays & Captions</h4>
+                  <p>Add top, center, or bottom text captions. Use <code>//</code> to split different captions across individual photos (e.g. <em>Before // After</em>), with custom fonts and sizes.</p>
+                </div>
+              </div>
+
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Live Animation Controls & Sync</h4>
+                  <p>Play, pause, scrub frames in real time, adjust playback speed (0.5x, 1x, 2x), and set start delays to synchronize animations.</p>
+                </div>
+              </div>
+
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Smart & Custom Grid Layouts</h4>
+                  <p>Smart layout algorithm balances rows and columns so images stay close to square, or choose custom layouts (1 to 4 columns, or a single row).</p>
+                </div>
+              </div>
+
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Interactive Pan, Zoom & Fit</h4>
+                  <p>Drag photos directly on the canvas to pan, zoom with Shift + scroll wheel or sliders, and fit cells cleanly without distortion.</p>
+                </div>
+              </div>
+
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Flexible Borders & Spacing</h4>
+                  <p>Independently adjust outer frame borders, inner spacing gaps between photos, and background color (including transparent).</p>
+                </div>
+              </div>
+
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Preset & Custom Aspect Ratios</h4>
+                  <p>Choose popular aspect ratios (1:1 Square, 16:9 Landscape, 9:16 Vertical Story, 4:3, etc.) or set exact pixel dimensions.</p>
+                </div>
+              </div>
+
+              <div class="about-feature-card">
+                <div class="about-feature-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                <div class="about-feature-info">
+                  <h4>Crisp High-Resolution Export</h4>
+                  <p>Save finished collages in high resolution up to 16+ megapixels as PNG, JPG, WebP, animated GIF, or animated WebP.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. Credits -->
+          <section class="about-section" aria-labelledby="about-header-credits">
+            <div class="about-section-header">
+              <span class="about-section-badge">3</span>
+              <h3 id="about-header-credits" class="about-section-title">Credits</h3>
             </div>
 
-            <div class="feature-item">
-              <div class="feature-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+            <!-- Author & Repository -->
+            <div class="about-creator-card">
+              <div class="creator-details">
+                <span class="creator-badge">Project Creator</span>
+                <h4 class="creator-name">S.H.Kaya</h4>
+                <p class="creator-desc">ImageCombiner Web is designed and developed by S.H.Kaya.</p>
               </div>
-              <div class="feature-text">
-                <h3>Full Animated GIF & WebP Support</h3>
-                <p>Mix static photos with animated GIFs seamlessly. Preview animations live with scrub and speed controls, adjust start-time alignment, and export as animated GIF or WebP.</p>
-              </div>
+              <a href="https://github.com/Aldebaran38/ImageCombinerWeb" target="_blank" rel="noopener noreferrer" class="btn btn-outline creator-repo-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                </svg>
+                <span>GitHub Repository</span>
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
             </div>
 
-            <div class="feature-item">
-              <div class="feature-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-              </div>
-              <div class="feature-text">
-                <h3>Smart Grid Balance</h3>
-                <p>The layout engine automatically evaluates row and column combinations to find the arrangement where individual photos look closest to square and balanced.</p>
-              </div>
-            </div>
-
-            <div class="feature-item">
-              <div class="feature-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
-              </div>
-              <div class="feature-text">
-                <h3>Center-Crop Fitting</h3>
-                <p>Photos fill each cell completely from the center without stretching or introducing unwanted black bars.</p>
-              </div>
-            </div>
-
-            <div class="feature-item">
-              <div class="feature-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
-              </div>
-              <div class="feature-text">
-                <h3>Flexible Borders & Spacing</h3>
-                <p>Customize outer border frames and inner gaps between photos independently, or remove borders completely with full color control.</p>
-              </div>
-            </div>
-
-            <div class="feature-item">
-              <div class="feature-icon-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              </div>
-              <div class="feature-text">
-                <h3>Crisp High-Resolution Export</h3>
-                <p>Export in PNG, JPEG, GIF, or WEBP up to 16+ Megapixels for print quality, social media posts, or portfolios.</p>
+            <!-- Third-Party Libraries -->
+            <div class="about-libraries-card">
+              <h5 class="libraries-heading">Libraries & Resources Used</h5>
+              <div class="libraries-list">
+                <div class="library-item">
+                  <div class="library-name-row">
+                    <span class="library-name">omggif</span>
+                    <span class="library-badge">MIT License</span>
+                  </div>
+                  <p class="library-desc">By Dean McNamee. Reads and decodes animated GIF files directly in the browser.</p>
+                </div>
+                <div class="library-item">
+                  <div class="library-name-row">
+                    <span class="library-name">gifenc</span>
+                    <span class="library-badge">MIT License</span>
+                  </div>
+                  <p class="library-desc">By Matt DesLauriers. Encodes animation frames into high-quality animated GIF files.</p>
+                </div>
+                <div class="library-item">
+                  <div class="library-name-row">
+                    <span class="library-name">webp-muxer</span>
+                    <span class="library-badge">MIT License</span>
+                  </div>
+                  <p class="library-desc">Packages frames into standard animated WebP files inside the browser.</p>
+                </div>
+                <div class="library-item">
+                  <div class="library-name-row">
+                    <span class="library-name">Google Fonts</span>
+                    <span class="library-badge">OFL</span>
+                  </div>
+                  <p class="library-desc">Inter, JetBrains Mono, and Newsreader for clean typography.</p>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
         </div>
 
         <div class="modal-footer">

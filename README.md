@@ -1,65 +1,60 @@
 # ImageCombiner Web
 
-A fast, private, and simple web application to combine multiple photos into a single clean collage image right inside your browser.
+A simple web app to combine multiple photos and animated GIFs into a single grid image. It runs completely inside your browser, so your files are never uploaded to any server.
 
 ---
 
 ## Features
 
-- **100% Client-Side & Private:** All image processing runs locally in your browser's memory using HTML5 Canvas. Your photos are never uploaded to any server.
-- **Smart Balanced Layout:** Automatically calculates the cleanest grid distribution so photos are close to square and balanced.
-- **Center-Crop Fit:** Automatically fits and crops photos from the center to fill cells with zero distortion or black bars.
-- **Aspect Ratio & Megapixel Engine:** Select common shapes (`1:1`, `16:9`, `4:3`, `9:16`, `Custom`) and adjust resolution up to 16+ Megapixels.
-- **Custom Borders, Spacing & Backgrounds:** Control outer border frames and inner gaps between photos independently, pick custom border/background colors or choose transparent.
-- **Easy Reordering:** Drag-and-drop thumbnail cards or use arrow buttons to arrange your photos.
-- **Export Formats:** Download as PNG (lossless), JPEG, or WEBP with quality controls.
+- **Private and local**: All image handling happens in your browser using HTML5 Canvas. Your photos never leave your device.
+- **Mix photos and GIFs**: You can combine static images (PNG, JPG, WebP, SVG, BMP) and animated GIFs in the same grid.
+- **Animation preview**: Play, pause, scrub through frames, adjust playback speed (0.5x, 1x, 2x), and set start delays to sync animations.
+- **Automatic and custom layouts**: Automatically calculates a balanced grid so photos stay close to square, or pick a fixed column count (1 to 4 columns, or a single row).
+- **Crop, pan, and zoom**: Images fit neatly into cells without distortion. You can drag images in the preview to pan, use Shift + mouse wheel to zoom, or use the sliders in the sidebar.
+- **Text and captions**: Add top, center, or bottom captions. You can split captions across different photos using `//` (for example: `Before // After`).
+- **Borders and colors**: Adjust the spacing between images and around the edges. Pick any background color or set it to transparent.
+- **Custom aspect ratios**: Choose standard formats (1:1, 16:9, 9:16, 4:3, etc.) or set exact pixel dimensions. Supports high-resolution exports (up to 16+ megapixels).
+- **Export formats**: Save your finished image as PNG, JPG, WebP, animated GIF, or animated WebP.
 
 ---
 
 ## How to Run
 
-### Option 1: Open Directly
-Double-click `index.html` to open and use the application directly in any modern browser (Chrome, Firefox, Edge, Safari). No installation, Node.js, or build step required.
+### Option 1: Open index.html (Easiest)
+You do not need to install anything. Just double-click `index.html` or drag it into any modern web browser (Chrome, Firefox, Edge, Safari).
 
-### Option 2: Run with a Local Server
-If you prefer running a local development server:
+### Option 2: Run a local server
+If you prefer running it through a local development server:
+
+**With Python:**
 ```bash
-# Python 3
 python -m http.server 8000
+```
+Then open `http://localhost:8000` in your browser.
 
-# or Node.js / npx
+**With Node.js:**
+```bash
 npx serve
 ```
-Then visit `http://localhost:8000` in your browser.
+
 
 ---
 
-## Deployment to GitHub Pages
+## Libraries Used
 
-1. Push your repository to GitHub.
-2. In your GitHub repository, navigate to **Settings** > **Pages**.
-3. Under **Branch**, select `main` and root `/`, then click **Save**.
-4. Your site will be live within seconds!
+The app is written in plain HTML, CSS, and JavaScript without heavy frameworks. It uses a few small helper scripts:
 
----
-
-## Project Structure
-
-```
-ImageCombinerWeb/
-├── index.html       # Application UI, controls, and About dialog
-├── css/
-│   └── style.css    # Minimalist dark theme and responsive styling
-├── js/
-│   ├── layout.js    # Mathematical grid layout engine
-│   ├── combiner.js  # Canvas compositing and center-crop math
-│   └── app.js       # User interactions, drag-and-drop, and state
-├── .gitignore       # Standard ignore rules for OS and editor files
-└── README.md        # Project documentation
-```
+- **omggif** (by Dean McNamee, MIT License): Reads and decodes animated GIF files in the browser.
+- **gifenc** (by Matt DesLauriers, MIT License): Encodes frames into animated GIF files on export.
+- **webp-muxer** (`js/libs/webp-muxer.js`): Packages frames into animated WebP files.
+- **Google Fonts**: Inter, JetBrains Mono, and Newsreader for clean interface text.
 
 ---
 
 ## License
 
-MIT License. Free for personal and commercial use.
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [LICENSE](LICENSE) file for details.
+
+In short: you are free to use, modify, and share this software. If you share modified versions, they must also be open source under the same GPL-3.0 license.
+
+The helper libraries in `js/libs/` (`omggif` and `gifenc`) are used under their original MIT licenses.
