@@ -44,54 +44,131 @@
     <!-- Main Workspace -->
     <main class="app-main">
       
-      <!-- Left Column: Added Media -->
+      <!-- Left Column: Added Media & Text Overlay -->
       <aside class="col-left" id="left-sidebar">
-        <!-- Section 1: Upload & Queue -->
-        <section class="card-section content-box-section" id="photos-section">
-          <div class="section-header">
-            <div class="section-title-wrap">
-              <h2 class="section-title">Added Media</h2>
-              <span id="photo-count-badge" class="badge">0 items</span>
-            </div>
-            <button id="clear-all-btn" class="btn btn-subtle-danger" type="button" title="Remove all photos" style="display: none;">
-              Clear All
-            </button>
-          </div>
-
-          <!-- Drag and drop zone -->
-          <input type="file" id="file-input" multiple accept="image/png,image/jpeg,image/webp,image/bmp,image/gif,image/svg+xml" class="visually-hidden">
-          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload photos by clicking or dropping files here">
-            <div class="drop-zone-content">
-              <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-              <p class="drop-zone-primary"><strong>Click to browse</strong> or drag photos here</p>
-              <p class="drop-zone-hint">Supports PNG, JPG, WEBP, GIF, SVG</p>
-            </div>
-          </div>
-
-          <!-- Uploaded Photos Queue -->
-          <div id="photo-queue-container" class="photo-queue-container" style="display: none;">
-            <div class="queue-toolbar">
-              <span class="queue-tip">Drag or use arrows to reorder</span>
-              <button id="add-more-btn" class="btn btn-xs btn-outline" type="button">
-                + Add More
+        <!-- Scrollable Media Queue -->
+        <div class="media-scroll-area" id="media-scroll-area">
+          <!-- Section 1: Upload & Queue -->
+          <section class="card-section content-box-section" id="photos-section">
+            <div class="section-header">
+              <div class="section-title-wrap">
+                <h2 class="section-title">Added Media</h2>
+                <span id="photo-count-badge" class="badge">0 items</span>
+              </div>
+              <button id="clear-all-btn" class="btn btn-subtle-danger" type="button" title="Remove all photos" style="display: none;">
+                Clear All
               </button>
             </div>
-            <ul id="photo-queue-list" class="photo-queue-list" aria-label="List of uploaded photos"></ul>
-            <div class="queue-footer">
-              <button id="reset-all-adjustments-btn" class="btn btn-xs btn-outline queue-reset-all-btn" type="button" title="Reset offset and scale for all photos">
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
-                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                  <path d="M3 3v5h5" />
+
+            <!-- Drag and drop zone -->
+            <input type="file" id="file-input" multiple accept="image/png,image/jpeg,image/webp,image/bmp,image/gif,image/svg+xml" class="visually-hidden">
+            <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload photos by clicking or dropping files here">
+              <div class="drop-zone-content">
+                <svg class="drop-zone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
-                Reset Offsets & Scales
+                <p class="drop-zone-primary"><strong>Click to browse</strong> or drag photos here</p>
+                <p class="drop-zone-hint">Supports PNG, JPG, WEBP, GIF, SVG</p>
+              </div>
+            </div>
+
+            <!-- Uploaded Photos Queue -->
+            <div id="photo-queue-container" class="photo-queue-container" style="display: none;">
+              <div class="queue-toolbar">
+                <span class="queue-tip">Drag or use arrows to reorder</span>
+                <button id="add-more-btn" class="btn btn-xs btn-outline" type="button">
+                  + Add More
+                </button>
+              </div>
+              <ul id="photo-queue-list" class="photo-queue-list" aria-label="List of uploaded photos"></ul>
+              <div class="queue-footer">
+                <button id="reset-all-adjustments-btn" class="btn btn-xs btn-outline queue-reset-all-btn" type="button" title="Reset offset and scale for all photos">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                  </svg>
+                  Reset Offsets & Scales
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Section: Text Overlay Dock (Pinned at bottom) -->
+        <div class="text-dock-section">
+          <section class="card-section text-dock-card" id="text-overlay-section">
+            <div class="text-dock-header">
+              <div class="section-title-wrap">
+                <h2 class="section-title">Text Overlay</h2>
+              </div>
+              <button id="overlay-settings-toggle-btn" class="btn btn-xs btn-ghost text-settings-toggle-btn" type="button" title="Toggle text settings" aria-expanded="false">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                <span>Options</span>
               </button>
             </div>
-          </div>
-        </section>
+
+            <!-- Text Input -->
+            <div class="control-group">
+              <textarea id="overlay-text-input" class="form-textarea text-overlay-input" rows="2" placeholder="Text for photo 1 // photo 2 (\n for line break)" aria-label="Text overlay input"></textarea>
+            </div>
+
+            <!-- Position Dropdown Row -->
+            <div class="control-group text-dock-position-row">
+              <label for="overlay-position-select" class="control-label">Position</label>
+              <select id="overlay-position-select" class="form-select form-select-sm">
+                <option value="bottom" selected>Bottom (Default)</option>
+                <option value="top">Top</option>
+                <option value="center">Center</option>
+                <option value="custom">Custom (Sliders)</option>
+              </select>
+            </div>
+
+            <!-- Collapsible Settings Drawer -->
+            <div id="overlay-settings-drawer" class="text-settings-drawer" style="display: none;">
+              <!-- Font Family -->
+              <div class="control-group">
+                <label for="overlay-font-family-select" class="control-label">Font Family</label>
+                <select id="overlay-font-family-select" class="form-select form-select-sm">
+                  <option value="Impact" selected>Classic Meme (Impact)</option>
+                  <option value="Inter, system-ui, -apple-system, sans-serif">Modern Sans (Inter / Arial)</option>
+                  <option value="Georgia, serif">Classic Serif (Georgia)</option>
+                </select>
+              </div>
+
+              <!-- Font Size (Proportional) -->
+              <div class="control-group">
+                <div class="label-with-value">
+                  <label for="overlay-font-size-range" class="control-label">Font Size</label>
+                  <span id="overlay-font-size-display" class="value-indicator">35%</span>
+                </div>
+                <input type="range" id="overlay-font-size-range" min="15" max="80" step="1" value="35" class="form-range">
+              </div>
+
+              <!-- Offset X -->
+              <div class="control-group">
+                <div class="label-with-value">
+                  <label for="overlay-offset-x-range" class="control-label">Offset X</label>
+                  <span id="overlay-offset-x-display" class="value-indicator">0.00</span>
+                </div>
+                <input type="range" id="overlay-offset-x-range" min="-1" max="1" step="0.05" value="0" class="form-range">
+              </div>
+
+              <!-- Offset Y -->
+              <div class="control-group">
+                <div class="label-with-value">
+                  <label for="overlay-offset-y-range" class="control-label">Offset Y</label>
+                  <span id="overlay-offset-y-display" class="value-indicator">-0.85</span>
+                </div>
+                <input type="range" id="overlay-offset-y-range" min="-1" max="1" step="0.05" value="-0.85" class="form-range">
+              </div>
+            </div>
+          </section>
+        </div>
       </aside>
 
       <!-- Center Column: Preview & Game Promotion -->

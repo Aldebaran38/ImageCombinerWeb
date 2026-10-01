@@ -59,7 +59,15 @@
     draggedIndex: null,       // Index of card currently being dragged
     canvasHoverIndex: -1,     // Index of cell currently hovered on canvas
     canvasDrag: null,         // Drag state: { index, startX, startY, origOffsetX, origOffsetY, lockedAxis, ... }
-    expandedCardIds: new Set() // Set of image item IDs whose adjustment dropdown is open
+    expandedCardIds: new Set(), // Set of image item IDs whose adjustment dropdown is open
+    textOverlay: {
+      text: '',
+      preset: 'bottom',
+      offsetX: 0.0,
+      offsetY: -0.85,
+      fontSizeScale: 35,
+      fontFamily: 'Impact'
+    }
   };
 
   // DOM Elements Cache
@@ -93,6 +101,19 @@
     resetAllAdjustmentsBtn: document.getElementById('reset-all-adjustments-btn'),
     addMoreBtn: document.getElementById('add-more-btn'),
     emptyBrowseBtn: document.getElementById('empty-browse-btn'),
+
+    // Text Overlay Controls
+    overlayTextInput: document.getElementById('overlay-text-input'),
+    overlayPositionSelect: document.getElementById('overlay-position-select'),
+    overlaySettingsToggleBtn: document.getElementById('overlay-settings-toggle-btn'),
+    overlaySettingsDrawer: document.getElementById('overlay-settings-drawer'),
+    overlayFontFamilySelect: document.getElementById('overlay-font-family-select'),
+    overlayFontSizeRange: document.getElementById('overlay-font-size-range'),
+    overlayFontSizeDisplay: document.getElementById('overlay-font-size-display'),
+    overlayOffsetXRange: document.getElementById('overlay-offset-x-range'),
+    overlayOffsetXDisplay: document.getElementById('overlay-offset-x-display'),
+    overlayOffsetYRange: document.getElementById('overlay-offset-y-range'),
+    overlayOffsetYDisplay: document.getElementById('overlay-offset-y-display'),
 
     // Canvas Dimensions
     aspectRatioSelect: document.getElementById('aspect-ratio-select'),
@@ -271,7 +292,8 @@
       bgColor: state.bgColor,
       isTransparent: state.isTransparent,
       time: state.currentTime,
-      activeCellIndex: activeCell
+      activeCellIndex: activeCell,
+      textOverlay: state.textOverlay
     });
   }
 
@@ -1218,6 +1240,103 @@
       updateCanvas();
     });
 
+    // Text Overlay Event Handlers
+    if (DOM.overlayTextInput) {
+      DOM.overlayTextInput.addEventListener('input', (e) => {
+        state.textOverlay.text = e.target.value;
+        renderCurrentCanvasFrame();
+      });
+    }
+
+    if (DOM.overlayPositionSelect) {
+      DOM.overlayPositionSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        state.textOverlay.preset = val;
+        if (val === 'bottom') {
+          state.textOverlay.offsetX = 0.0;
+          state.textOverlay.offsetY = -0.85;
+        } else if (val === 'top') {
+          state.textOverlay.offsetX = 0.0;
+          state.textOverlay.offsetY = 0.85;
+        } else if (val === 'center') {
+          state.textOverlay.offsetX = 0.0;
+          state.textOverlay.offsetY = 0.0;
+        } else if (val === 'custom') {
+          if (DOM.overlaySettingsDrawer) {
+            DOM.overlaySettingsDrawer.style.display = 'flex';
+            if (DOM.overlaySettingsToggleBtn) {
+              DOM.overlaySettingsToggleBtn.classList.add('active');
+              DOM.overlaySettingsToggleBtn.setAttribute('aria-expanded', 'true');
+            }
+          }
+        }
+
+        if (DOM.overlayOffsetXRange) {
+          DOM.overlayOffsetXRange.value = state.textOverlay.offsetX;
+        }
+        if (DOM.overlayOffsetXDisplay) {
+          DOM.overlayOffsetXDisplay.textContent = state.textOverlay.offsetX.toFixed(2);
+        }
+        if (DOM.overlayOffsetYRange) {
+          DOM.overlayOffsetYRange.value = state.textOverlay.offsetY;
+        }
+        if (DOM.overlayOffsetYDisplay) {
+          DOM.overlayOffsetYDisplay.textContent = state.textOverlay.offsetY.toFixed(2);
+        }
+
+        renderCurrentCanvasFrame();
+      });
+    }
+
+    if (DOM.overlaySettingsToggleBtn && DOM.overlaySettingsDrawer) {
+      DOM.overlaySettingsToggleBtn.addEventListener('click', () => {
+        const isHidden = DOM.overlaySettingsDrawer.style.display === 'none';
+        DOM.overlaySettingsDrawer.style.display = isHidden ? 'flex' : 'none';
+        DOM.overlaySettingsToggleBtn.classList.toggle('active', isHidden);
+        DOM.overlaySettingsToggleBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+      });
+    }
+
+    if (DOM.overlayFontFamilySelect) {
+      DOM.overlayFontFamilySelect.addEventListener('change', (e) => {
+        state.textOverlay.fontFamily = e.target.value;
+        renderCurrentCanvasFrame();
+      });
+    }
+
+    if (DOM.overlayFontSizeRange) {
+      DOM.overlayFontSizeRange.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10) || 35;
+        state.textOverlay.fontSizeScale = val;
+        if (DOM.overlayFontSizeDisplay) {
+          DOM.overlayFontSizeDisplay.textContent = `${val}%`;
+        }
+        renderCurrentCanvasFrame();
+      });
+    }
+
+    if (DOM.overlayOffsetXRange) {
+      DOM.overlayOffsetXRange.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        state.textOverlay.offsetX = val;
+        state.textOverlay.preset = 'custom';
+        if (DOM.overlayPositionSelect) DOM.overlayPositionSelect.value = 'custom';
+        if (DOM.overlayOffsetXDisplay) DOM.overlayOffsetXDisplay.textContent = val.toFixed(2);
+        renderCurrentCanvasFrame();
+      });
+    }
+
+    if (DOM.overlayOffsetYRange) {
+      DOM.overlayOffsetYRange.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value) || 0;
+        state.textOverlay.offsetY = val;
+        state.textOverlay.preset = 'custom';
+        if (DOM.overlayPositionSelect) DOM.overlayPositionSelect.value = 'custom';
+        if (DOM.overlayOffsetYDisplay) DOM.overlayOffsetYDisplay.textContent = val.toFixed(2);
+        renderCurrentCanvasFrame();
+      });
+    }
+
     // Export Format & Quality Controls
     DOM.exportFormatSelect.addEventListener('change', (e) => {
       state.exportFormat = e.target.value;
@@ -1333,7 +1452,8 @@
               gapSize: state.gapSize,
               outerBorderSize: getEffectiveOuterBorder(),
               bgColor: state.bgColor,
-              isTransparent: state.isTransparent
+              isTransparent: state.isTransparent,
+              textOverlay: state.textOverlay
             },
             duration: state.animDuration,
             fps: state.exportFps,

@@ -395,6 +395,96 @@
       );
     }
 
+    // Render text overlays on individual photo cells
+    if (options.textOverlay && typeof options.textOverlay.text === 'string') {
+      const rawText = options.textOverlay.text.trim();
+      if (rawText.length > 0) {
+        const imageTexts = rawText.split('//').map(function (s) { return s.trim(); });
+        const normX = options.textOverlay.offsetX !== undefined ? options.textOverlay.offsetX : 0.0;
+        const normY = options.textOverlay.offsetY !== undefined ? options.textOverlay.offsetY : -0.85;
+        const fontSizeScale = options.textOverlay.fontSizeScale !== undefined ? options.textOverlay.fontSizeScale : 35;
+        const fontFamily = options.textOverlay.fontFamily || 'Impact, sans-serif';
+
+        for (let i = 0; i < count; i++) {
+          if (i >= imageTexts.length) break;
+          const cellRaw = imageTexts[i];
+          if (!cellRaw || cellRaw.length === 0) continue;
+
+          const rect = rects[i];
+          const lines = cellRaw.split(/\\n|\r?\n/).map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+          if (lines.length === 0) continue;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(rect.x, rect.y, rect.width, rect.height);
+          ctx.clip();
+
+          const margin = Math.max(8, Math.round(rect.width * 0.04));
+          const maxWidth = Math.max(10, rect.width - margin * 2);
+          const maxHeight = Math.max(10, rect.height - margin * 2);
+
+          // Proportional base font size relative to cell height
+          let fontSize = Math.max(12, Math.round(rect.height * (fontSizeScale / 100) * 0.22));
+          ctx.font = 'bold ' + fontSize + 'px ' + fontFamily;
+
+          // Check if any line exceeds maxWidth; shrink proportionally if needed
+          let maxLineWidth = 0;
+          for (let l = 0; l < lines.length; l++) {
+            const w = ctx.measureText(lines[l]).width;
+            if (w > maxLineWidth) maxLineWidth = w;
+          }
+
+          if (maxLineWidth > maxWidth && maxLineWidth > 0) {
+            const shrinkRatio = maxWidth / maxLineWidth;
+            fontSize = Math.max(10, Math.floor(fontSize * shrinkRatio));
+            ctx.font = 'bold ' + fontSize + 'px ' + fontFamily;
+            maxLineWidth = 0;
+            for (let l = 0; l < lines.length; l++) {
+              const w = ctx.measureText(lines[l]).width;
+              if (w > maxLineWidth) maxLineWidth = w;
+            }
+          }
+
+          let lineHeight = fontSize * 1.18;
+          let totalTextHeight = lines.length * lineHeight;
+          if (totalTextHeight > maxHeight && totalTextHeight > 0) {
+            const vShrink = maxHeight / totalTextHeight;
+            fontSize = Math.max(10, Math.floor(fontSize * vShrink));
+            ctx.font = 'bold ' + fontSize + 'px ' + fontFamily;
+            lineHeight = fontSize * 1.18;
+            totalTextHeight = lines.length * lineHeight;
+          }
+
+          const centerX = rect.x + rect.width / 2;
+          const centerY = rect.y + rect.height / 2;
+          const halfAvailW = Math.max(0, (rect.width - 2 * margin - maxLineWidth) / 2);
+          const halfAvailH = Math.max(0, (rect.height - 2 * margin - totalTextHeight) / 2);
+
+          const textX = centerX + normX * halfAvailW;
+          const textBlockCenterY = centerY - normY * halfAvailH;
+
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const outlineWidth = Math.max(2, Math.round(fontSize * 0.14));
+          ctx.lineWidth = outlineWidth;
+          ctx.lineJoin = 'round';
+          ctx.miterLimit = 2;
+          ctx.strokeStyle = '#000000';
+          ctx.fillStyle = '#ffffff';
+
+          const startY = textBlockCenterY - (totalTextHeight / 2) + (lineHeight / 2);
+          for (let l = 0; l < lines.length; l++) {
+            const lineY = startY + l * lineHeight;
+            ctx.strokeText(lines[l], textX, lineY);
+            ctx.fillText(lines[l], textX, lineY);
+          }
+
+          ctx.restore();
+        }
+      }
+    }
+
     // Active cell highlight for canvas hover / drag interactivity
     if (
       options.activeCellIndex !== undefined &&
