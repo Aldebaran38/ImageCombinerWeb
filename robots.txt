@@ -1,0 +1,7 @@
+# robots.txt for ImageCombiner Web
+# https://aldebaran38.github.io/ImageCombinerWeb/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://aldebaran38.github.io/ImageCombinerWeb/sitemap.xml

@@ -1,0 +1,29 @@
+# ImageCombiner Web
+
+> A fast, private, client-side web application to combine multiple photos and animated GIFs into a single grid collage directly inside the browser.
+
+ImageCombiner Web is an open-source tool that processes images 100% locally on the user's device using HTML5 Canvas and JavaScript. No user files are ever uploaded to any server.
+
+## Key Features
+
+- **100% Client-Side Privacy:** No server processing, cloud uploads, or tracking. All cropping, compositing, and rendering happen in the local browser memory.
+- **Mix Photos and Animated GIFs:** Supports combining static image formats (PNG, JPG, WebP, SVG, BMP) with animated GIFs into the same grid.
+- **Smart Aspect Ratio Grid:** Automatically computes optimal row and column distributions so individual images stay close to square (aspect ratio ~ 1:1), or allows fixed column counts (1 to 4 columns, or a single row strip).
+- **Interactive Pan & Zoom:** Users can drag images inside grid cells to adjust centering, or use Shift + mouse scroll wheel / sliders to zoom in and out.
+- **Text Overlays & Captions:** Add captions to the top, center, or bottom of cells, with support for per-image split syntax using `//` (e.g. `Before // After`).
+- **Flexible Borders and Spacing:** Independently configurable inner photo gaps, outer borders, and background color (including transparency).
+- **High-Resolution Export:** Export to PNG, JPEG, static WebP, animated GIF, or animated WebP at user-defined resolutions and megapixels.
+
+## Project Details
+
+- **Website / Live URL:** https://aldebaran38.github.io/ImageCombinerWeb/
+- **Source Code Repository:** https://github.com/Aldebaran38/ImageCombinerWeb
+- **License:** GNU General Public License v3.0 (GPL-3.0)
+- **Author:** S.H.Kaya
+- **Tech Stack:** Vanilla JavaScript (ES6+), HTML5 Canvas, CSS3 (No build step, no npm dependencies required).
+
+## Third-Party Libraries Used
+
+- `omggif` (by Dean McNamee, MIT License): In-browser GIF decoding.
+- `gifenc` (by Matt DesLauriers, MIT License): In-browser GIF encoding and quantization.
+- `webp-muxer` (MIT License): Client-side WebP muxing.
