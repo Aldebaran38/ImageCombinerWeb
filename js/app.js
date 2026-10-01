@@ -1241,11 +1241,33 @@
     });
 
     // Text Overlay Event Handlers
+    const adjustTextOverlayHeight = () => {
+      if (!DOM.overlayTextInput) return;
+      DOM.overlayTextInput.style.height = 'auto';
+      const scrollH = DOM.overlayTextInput.scrollHeight;
+      const maxH = Math.min(420, Math.floor(window.innerHeight * 0.45));
+      if (scrollH > maxH) {
+        DOM.overlayTextInput.style.height = `${maxH}px`;
+        DOM.overlayTextInput.style.overflowY = 'auto';
+      } else {
+        DOM.overlayTextInput.style.height = `${Math.max(48, scrollH)}px`;
+        DOM.overlayTextInput.style.overflowY = 'hidden';
+      }
+    };
+
     if (DOM.overlayTextInput) {
       DOM.overlayTextInput.addEventListener('input', (e) => {
         state.textOverlay.text = e.target.value;
+        adjustTextOverlayHeight();
         renderCurrentCanvasFrame();
       });
+
+      DOM.overlayTextInput.addEventListener('paste', () => {
+        setTimeout(adjustTextOverlayHeight, 0);
+      });
+
+      window.addEventListener('resize', adjustTextOverlayHeight);
+      adjustTextOverlayHeight();
     }
 
     if (DOM.overlayPositionSelect) {

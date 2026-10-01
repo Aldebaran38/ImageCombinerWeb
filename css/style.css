@@ -239,13 +239,21 @@ html, body {
 
 .text-overlay-input {
   width: 100%;
-  resize: vertical;
+  resize: none;
   min-height: 48px;
-  max-height: 100px;
+  max-height: 420px;
   font-size: 0.8125rem;
-  line-height: 1.4;
-  padding: 6px 8px;
+  line-height: 1.45;
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  transition: height 0.1s ease;
+}
+
+.text-overlay-input::-webkit-scrollbar {
+  display: none;
 }
 
 .text-dock-position-row {
